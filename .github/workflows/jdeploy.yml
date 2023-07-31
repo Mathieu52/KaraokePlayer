@@ -28,4 +28,4 @@ jobs:
         uses: shannah/jdeploy@master
         with:
           target_repository: 'Mathieu52/KaraokePlayer'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ github.token }}
