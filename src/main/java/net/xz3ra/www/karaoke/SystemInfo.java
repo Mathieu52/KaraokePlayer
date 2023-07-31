@@ -1,4 +1,4 @@
-package org.openjfx;
+package net.xz3ra.www.karaoke;
 
 public class SystemInfo {
 
