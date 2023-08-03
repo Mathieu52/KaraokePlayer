@@ -28,6 +28,6 @@
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.main.class>net.xz3ra.www.karaoke.App</maven.compiler.main.class>
+        <maven.compiler.main.class>net.xz3ra.www.karaokeplayer.App</maven.compiler.main.class>
     </properties>
 </project>
