@@ -14,6 +14,7 @@ import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
 import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
 import net.xz3ra.www.karaokeplayer.karaoke.KaraokePlayer;
 import net.xz3ra.www.karaokeplayer.karaoke.KaraokeView;
+import net.xz3ra.www.karaokeplayer.karaoke.control.KaraokePlayerControl;
 import net.xz3ra.www.karaokeplayer.manager.TimeManager;
 
 public class Controller {
@@ -26,9 +27,8 @@ public class Controller {
 
     @FXML
     private KaraokeView karaokeView;
-
     @FXML
-    private Slider volumeSlider;
+    private KaraokePlayerControl playerControl;
 
     private TimeManager timeManager = new TimeManager();
 
@@ -50,10 +50,13 @@ public class Controller {
         }
 
         karaokePlayer = new KaraokePlayer(karaoke);
-        karaokePlayer.volumeProperty().bind(volumeSlider.valueProperty());
 
         karaokeView.setKaraokePlayer(karaokePlayer);
+        playerControl.setKaraokePlayer(karaokePlayer);
+
         karaokePlayer.play();
+
+        //  Skip the first part of the song (Testing only)
         Duration duration = Duration.seconds(18);
         karaokePlayer.setOnPlaying(() -> karaokePlayer.seek(duration));
     }

@@ -92,7 +92,9 @@
       <AnchorPane VBox.vgrow="ALWAYS">
          <children>
             <KaraokeView fx:id="karaokeView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-            <KaraokePlayerControl fx:id="karaokeControl" alignment="BOTTOM_CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"/>
+             <HBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                <KaraokePlayerControl fx:id="playerControl"/>
+             </HBox>
          </children>
       </AnchorPane>
   </children>
