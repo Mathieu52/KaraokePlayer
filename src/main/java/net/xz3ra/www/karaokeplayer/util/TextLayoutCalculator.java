@@ -1,36 +1,72 @@
 package net.xz3ra.www.karaokeplayer.util;
 
+import javafx.geometry.Bounds;
 import javafx.geometry.Rectangle2D;
-import javafx.geometry.VPos;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Labeled;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextBoundsType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TextLayoutCalculator {
     private static Text TEMP_TEXT = new Text();
 
-    public static List<Rectangle2D> calculateTextBounds(Font font, TextAlignment textAlignX, VPos textAlignY, String text, double x, double y, double w, double h) {
-        return calculateTextSectionBounds(font, textAlignX, textAlignY, text, x, y, w, h, 0, text.length());
+    //  ************** LABEL **************
+
+    public static List<Rectangle2D> calculateLabeledBounds(Labeled labeled) {
+        return calculateTextBounds(labeled.getFont(), labeled.getText(), labeled.getTextAlignment(), labeled.getLineSpacing(), labeled.getLayoutBounds());
     }
 
-    public static List<Rectangle2D> calculateTextSectionBounds(Font font, TextAlignment textAlignX, VPos textAlignY, String text, double x, double y, double w, double h, double beginIndex) {
-        return calculateTextSectionBounds(font, textAlignX, textAlignY, text, x, y, w, h, beginIndex, text.length());
+    public static List<Rectangle2D> calculateLabeledBounds(Labeled labeled, double beginIndex) {
+        return calculateTextBounds(labeled.getFont(), labeled.getText(), labeled.getTextAlignment(), labeled.getLineSpacing(), labeled.getLayoutBounds(), beginIndex);
     }
 
-    public static List<Rectangle2D> calculateTextSectionBounds(Font font, TextAlignment textAlignX, VPos textAlignY, String text, double x, double y, double w, double h, double beginIndex, double endIndex) {
-        List<String> lines = calculateTextLayout(font, text, w, h);
+    public static List<Rectangle2D> calculateLabeledBounds(Labeled labeled, double beginIndex, double endIndex) {
+        return calculateTextBounds(labeled.getFont(), labeled.getText(), labeled.getTextAlignment(), labeled.getLineSpacing(), labeled.getLayoutBounds(), beginIndex, endIndex);
+    }
 
-        List<Rectangle2D> bounds = new ArrayList<>();
+    //  ************** TEXT **************
+    public static List<Rectangle2D> calculateTextBounds(Text text) {
+        return calculateTextBounds(text.getFont(), text.getText(), text.getTextAlignment(), text.getLineSpacing(), text.getLayoutBounds());
+    }
 
-        final double lineHeight = getStringHeight(font, " ");
+    public static List<Rectangle2D> calculateTextBounds(Text text, double beginIndex) {
+        return calculateTextBounds(text.getFont(), text.getText(), text.getTextAlignment(), text.getLineSpacing(), text.getLayoutBounds(), beginIndex);
+    }
 
-        //final TextAlignment textAlignX = font.;
-        //final VPos textAlignY = canvas.getTextOrigin(); // JavaFX does not support vertical text alignment in the same way as Processing
+    public static List<Rectangle2D> calculateTextBounds(Text text, double beginIndex, double endIndex) {
+        return calculateTextBounds(text.getFont(), text.getText(), text.getTextAlignment(), text.getLineSpacing(), text.getLayoutBounds(), beginIndex, endIndex);
+    }
+
+    //  ************** RAW **************
+    protected static List<Rectangle2D> calculateTextBounds(Font font, String text, TextAlignment alignment, double lineSpacing, Bounds bounds) {
+        if (text != null && !text.isEmpty()) {
+            return calculateTextBounds(font, text, alignment, lineSpacing, bounds, 0, text.length());
+        }
+        return new ArrayList<>();
+    }
+
+    protected static List<Rectangle2D> calculateTextBounds(Font font, String text, TextAlignment alignment, double lineSpacing, Bounds bounds, double beginIndex) {
+        if (text != null && !text.isEmpty()) {
+            return calculateTextBounds(font, text, alignment, lineSpacing, bounds, beginIndex, text.length());
+        }
+        return new ArrayList<>();
+    }
+
+    protected static List<Rectangle2D> calculateTextBounds(Font font, String text, TextAlignment alignment, double lineSpacing, Bounds bounds, double beginIndex, double endIndex) {
+        if (text == null || text.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<String> lines = calculateTextLayout(font, text, bounds);
+
+        List<Rectangle2D> linesBounds = new ArrayList<>();
+
+        double height = 0;
 
         int characterIndex = 0;
         for (int i = 0; i < lines.size(); i++) {
@@ -40,16 +76,14 @@ public class TextLayoutCalculator {
 
             String line = lines.get(i);
 
-            // Use Text objects to calculate font metrics
+            final double lineWidth = getStringWidth(font, line);
+            final double lineHeight = getStringHeight(font, line);
+            final double lineLength = line.length();
 
-            double lineWidth = getStringWidth(font, line);
-            double lineLength = line.length();
+            final double alignmentOffset = calculateAlignmentOffset(lineWidth, bounds.getWidth(), alignment);
 
-            double offsetX = calculateAlignOffsetX(lineWidth, w, textAlignX);
-            double offsetY = calculateAlignOffsetY(lineHeight, h, textAlignY);
-
-            double relativeBeginIndex = beginIndex - characterIndex;
-            double relativeEndIndex = endIndex - characterIndex;
+            final  double relativeBeginIndex = beginIndex - characterIndex;
+            final double relativeEndIndex = endIndex - characterIndex;
 
             if (relativeBeginIndex < lineLength || relativeEndIndex < lineLength) {
                 double clampedRelativeBeginIndex = Math.min(Math.max(relativeBeginIndex, 0), lineLength);
@@ -67,31 +101,36 @@ public class TextLayoutCalculator {
                     double boundWidth = boundWidthFloor - (boundWidthFloor - boundWidthCeil) * (endIndex - (int) endIndex);
                     boundWidth -= boundStart;
 
-                    Rectangle2D bound = new Rectangle2D(x + offsetX + boundStart, y + offsetY + lineHeight * i, boundWidth, lineHeight);
-                    bounds.add(bound);
+                    Rectangle2D bound = new Rectangle2D(alignmentOffset + boundStart, height, boundWidth, lineHeight + lineSpacing);
+
+                    linesBounds.add(bound);
                 }
             }
 
+            height += lineHeight + lineSpacing;
             characterIndex += lineLength + 1;
         }
 
-        return bounds;
+        return linesBounds;
     }
 
     private static double getStringWidth(Font font, String str) {
-        TEMP_TEXT = new Text(str);
         TEMP_TEXT.setFont(font);
-        //TEMP_TEXT.setText(str);
+        TEMP_TEXT.setText(str);
+        TEMP_TEXT.setBoundsType(TextBoundsType.LOGICAL_VERTICAL_CENTER);
+
         return TEMP_TEXT.getLayoutBounds().getWidth();
     }
 
     private static double getStringHeight(Font font, String str) {
         TEMP_TEXT.setFont(font);
         TEMP_TEXT.setText(str);
+        TEMP_TEXT.setBoundsType(TextBoundsType.LOGICAL_VERTICAL_CENTER);
+
         return TEMP_TEXT.getLayoutBounds().getHeight();
     }
 
-    private static double calculateAlignOffsetX(double width, double areaWidth, TextAlignment alignX) {
+    private static double calculateAlignmentOffset(double width, double areaWidth, TextAlignment alignX) {
         return switch (alignX) {
             case CENTER -> (areaWidth - width) / 2.0;
             case RIGHT -> areaWidth - width;
@@ -99,76 +138,44 @@ public class TextLayoutCalculator {
         };
     }
 
-    private static double calculateAlignOffsetY(double height, double areaHeight, VPos alignY) {
-        return switch (alignY) {
-            case CENTER -> (areaHeight - height) / 2.0;
-            case TOP -> areaHeight - height;
-            default -> 0;
-        };
-    }
+    public static List<String> calculateTextLayout(Font font, String text, Bounds bounds) {
+        if (text == null || text.isEmpty()) {
+            return new ArrayList<>();
+        }
 
-    public static List<String> calculateTextLayout(Font font, String text, double w, double h) {
+        TEMP_TEXT.getLayoutBounds();
         List<String> lines = new ArrayList<>();
 
-        final double lineHeight = font.getSize();
+        String[] words = text.split(" ");
 
-        if (lineHeight <= h) {
+        StringBuilder str = new StringBuilder();
+        boolean newLine = true;
 
-            final double textLeading = lineHeight;
+        for (String s : words) {
+            String word = s;
 
-            String[] words = text.split(" ");
+            if (getStringWidth(font,str + " " + word) > bounds.getWidth() || word.contains("\n")) {
+                if (word.contains("\n")) {
+                    String[] splitWord = word.split("\n");
 
-            String str = "";
-            double width = 0;
-            double height = 0;
+                    lines.add(str + " " + splitWord[0]);
 
-            final double spaceWidth = getStringWidth(font, " "); // You can adjust this value for the space width
+                    lines.addAll(Arrays.asList(splitWord).subList(1, splitWord.length - 1));
 
-            boolean exitSignal = false;
-
-            for (int i = 0; i < words.length; i++) {
-                String word = words[i];
-                double wordLength = getStringWidth(font, word);
-
-                if (width + spaceWidth + wordLength >= w || word.contains("\n")) {
-                    if (word.contains("\n")) {
-                        String[] splitWord = word.split("\n");
-
-                        lines.add(str + " " + splitWord[0]);
-
-                        for (int j = 1; j < splitWord.length - 1; j++) {
-                            lines.add(splitWord[j]);
-                        }
-
-                        word = splitWord[splitWord.length - 1];
-                    } else {
-                        lines.add(str);
-                    }
-
-                    width = 0;
-                    str = "";
-
-                    height += textLeading;
-
-                    if (height + lineHeight > h) {
-                        exitSignal = true;
-                    }
+                    word = splitWord[splitWord.length - 1];
+                } else if (!str.isEmpty()) {
+                    lines.add(str.toString());
                 }
 
-                if (exitSignal) {
-                    break;
-                }
-
-                boolean addSpace = width == 0;
-
-                str += (addSpace ? "" : " ") + word;
-                width += (addSpace ? 0 : spaceWidth) + wordLength;
+                newLine = true;
+                str = new StringBuilder();
             }
 
-            if (!exitSignal) {
-                lines.add(str);
-            }
+            str.append(newLine ? "" : " ").append(word);
+            newLine = false;
         }
+
+        lines.add(str.toString());
 
         return lines;
     }

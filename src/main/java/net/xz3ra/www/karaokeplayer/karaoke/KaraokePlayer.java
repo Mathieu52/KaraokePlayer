@@ -15,9 +15,9 @@ public class KaraokePlayer {
     private final Karaoke karaoke;
     private final MediaPlayer mediaPlayer;
 
-    private SimpleDoubleProperty lyricsIndexProperty = new SimpleDoubleProperty();
-    private SimpleDoubleProperty activeParagraphIndexProperty = new SimpleDoubleProperty();
-    private SimpleStringProperty activeParagraphProperty = new SimpleStringProperty();
+    private SimpleDoubleProperty lyricsIndexProperty = new SimpleDoubleProperty(0.0);
+    private SimpleDoubleProperty activeParagraphIndexProperty = new SimpleDoubleProperty(0.0);
+    private SimpleStringProperty activeParagraphProperty = new SimpleStringProperty("");
 
 
     public KaraokePlayer(Karaoke karaoke) {
@@ -140,6 +140,10 @@ public class KaraokePlayer {
         }
 
         return "";
+    }
+
+    public MediaPlayer getMediaPlayer() {
+        return mediaPlayer;
     }
 
     public ReadOnlyStringProperty activeParagraphProperty() {

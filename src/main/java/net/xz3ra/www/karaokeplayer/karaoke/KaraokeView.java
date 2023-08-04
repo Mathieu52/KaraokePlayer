@@ -1,14 +1,20 @@
 package net.xz3ra.www.karaokeplayer.karaoke;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.beans.NamedArg;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Rectangle2D;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
@@ -16,22 +22,40 @@ import net.xz3ra.www.karaokeplayer.util.TextLayoutCalculator;
 
 import java.util.List;
 
+import static net.xz3ra.www.karaokeplayer.util.RelativeUITools.calculate;
+
 public class KaraokeView extends StackPane {
-    private Label highlightedLyricsLabel;
-    private Label upcomingLyricsLabel;
-
-    private Pane highlightedLyricsMask;
-    private Pane upcomingLyricsMask;
-
-    private Font font = new Font(35);
+    public static final double DEFAULT_RELATIVE_FONT_SIZE = 35;
+    public static final Paint DEFAULT_HIGHLIGHT_FILL = Color.BLACK;
+    public static final Paint DEFAULT_UPCOMING_FILL = new Color(0, 0, 0, 0.2);
 
     private KaraokePlayer player;
 
-    private long lastTime = 0;
+    private final MediaView mediaView;
+    private final Label highlightedLyricsLabel;
+    private final Label upcomingLyricsLabel;
+
+    private final Pane highlightedLyricsMask;
+    private final Pane upcomingLyricsMask;
+
+    private Font font;
+    private final SimpleObjectProperty<Font> relativeFont = new SimpleObjectProperty<>();
 
     public KaraokeView() {
         super();
+        setRelativeFont(new Font(DEFAULT_RELATIVE_FONT_SIZE));
+        font = generateFont();
+
+        mediaView = new MediaView();
+
+        highlightedLyricsLabel = new Label("");
+        upcomingLyricsLabel = new Label("");
+
+        highlightedLyricsMask = new Pane();
+        upcomingLyricsMask = new Pane();
+
         initGraphics();
+        initProperty();
     }
 
     public KaraokeView(KaraokePlayer player) {
@@ -44,29 +68,45 @@ public class KaraokeView extends StackPane {
 
         highlightedLyricsLabel.textProperty().bind(player.activeParagraphProperty());
         upcomingLyricsLabel.textProperty().bind(player.activeParagraphProperty());
+
+        mediaView.setMediaPlayer(player.getMediaPlayer());
+    }
+
+    private void initProperty() {
+        relativeFontProperty().addListener(((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                font = generateFont();
+                updateLabels(player.getActiveParagraphIndex());
+            }
+        }));
     }
 
     private void initGraphics() {
-        highlightedLyricsLabel = new Label("");
-        upcomingLyricsLabel = new Label("");
-
         highlightedLyricsLabel.setFont(font);
         upcomingLyricsLabel.setFont(font);
-
-        highlightedLyricsMask = new Pane();
-        upcomingLyricsMask = new Pane();
 
         highlightedLyricsLabel.setClip(highlightedLyricsMask);
         upcomingLyricsLabel.setClip(upcomingLyricsMask);
 
-        highlightedLyricsLabel.setTextFill(Color.BLACK);
-        upcomingLyricsLabel.setTextFill(Color.LIGHTGRAY);
+        highlightedLyricsLabel.setTextFill(DEFAULT_HIGHLIGHT_FILL);
+        upcomingLyricsLabel.setTextFill(DEFAULT_UPCOMING_FILL);
 
         highlightedLyricsLabel.setWrapText(true);
         upcomingLyricsLabel.setWrapText(true);
 
+        highlightedLyricsLabel.setTextAlignment(TextAlignment.CENTER);
+        upcomingLyricsLabel.setTextAlignment(TextAlignment.CENTER);
 
-        getChildren().addAll(highlightedLyricsLabel, upcomingLyricsLabel);
+        mediaView.setPreserveRatio(true);
+        mediaView.setManaged(false);
+        mediaView.fitWidthProperty().bind(this.widthProperty());
+        mediaView.fitHeightProperty().bind(this.heightProperty());
+
+        getChildren().addAll(mediaView, highlightedLyricsLabel, upcomingLyricsLabel);
+
+        highlightedLyricsLabel.toBack();
+        upcomingLyricsLabel.toBack();
+        mediaView.toBack();
 
         AnimationTimer animationTimer = new AnimationTimer() {
             @Override
@@ -82,30 +122,69 @@ public class KaraokeView extends StackPane {
     public void resize(double width, double height) {
         super.resize(width, height);
 
-        double fontSize = calculate(35.0, 800.0, width, 500.0, height);
-        font = new Font(fontSize);
-        highlightedLyricsLabel.setFont(font);
-        upcomingLyricsLabel.setFont(font);
+        if (font != null && highlightedLyricsLabel != null && upcomingLyricsLabel != null) {
+            font = generateFont(width, height);
+            highlightedLyricsLabel.setFont(font);
+            upcomingLyricsLabel.setFont(font);
+        }
+
+        Platform.runLater(() -> updateLabels(player.getActiveParagraphIndex()));
     }
 
-    //private void resize()
+    private Font generateFont() {
+        return generateFont(this.getWidth(), this.getHeight());
+    }
+
+    private Font generateFont(double width, double height) {
+        double fontSize = calculate(getRelativeFont().getSize(), 800.0, width, 500.0, height);
+        return new Font(getRelativeFont().getName(), fontSize);
+    }
 
     private void updateLabels(double index) {
-        long time = System.currentTimeMillis();
-        System.out.println(time - lastTime);
-        lastTime = time;
+        if (highlightedLyricsLabel != null  && upcomingLyricsLabel != null && highlightedLyricsMask != null && upcomingLyricsMask != null) {
+            List<Rectangle2D> highlightedLabelBounds = TextLayoutCalculator.calculateLabeledBounds(highlightedLyricsLabel, 0, index);
+            List<Rectangle2D> upcomingLabelBounds = TextLayoutCalculator.calculateLabeledBounds(upcomingLyricsLabel, index);
 
-        List<Rectangle2D> lyricsBounds = TextLayoutCalculator.calculateTextSectionBounds(font, TextAlignment.LEFT, VPos.BOTTOM, highlightedLyricsLabel.getText(), 0, 0, this.getWidth(), this.getHeight(), 0, index);
-        List<Rectangle2D> maskBounds = TextLayoutCalculator.calculateTextSectionBounds(font, TextAlignment.LEFT, VPos.BOTTOM, upcomingLyricsLabel.getText(), 0, 0, this.getWidth(), this.getHeight(), index);
-
-        highlightedLyricsMask.getChildren().clear();
-        lyricsBounds.forEach(r -> highlightedLyricsMask.getChildren().add(new Rectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight())));
-        upcomingLyricsMask.getChildren().clear();
-        maskBounds.forEach(r -> upcomingLyricsMask.getChildren().add(new Rectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight())));
+            highlightedLyricsMask.getChildren().clear();
+            highlightedLabelBounds.forEach(r -> highlightedLyricsMask.getChildren().add(new Rectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight())));
+            upcomingLyricsMask.getChildren().clear();
+            upcomingLabelBounds.forEach(r -> upcomingLyricsMask.getChildren().add(new Rectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight())));
+       }
     }
 
-    public static double calculate(double size, double initialWidth, double realWidth, double initialHeight, double realHeight) {
-        double ratio = Math.min(realWidth / initialWidth, realHeight / initialHeight);
-        return size * ratio;
+    public Font getRelativeFont() {
+        return relativeFont.get();
+    }
+
+    public SimpleObjectProperty<Font> relativeFontProperty() {
+        return relativeFont;
+    }
+
+    public void setRelativeFont(Font relativeFontProperty) {
+        this.relativeFont.set(relativeFontProperty);
+    }
+
+    public Paint getHighlightTextFill() {
+        return highlightedLyricsLabel.textFillProperty().get();
+    }
+
+    public ObjectProperty<Paint> highlightTextFillProperty() {
+        return highlightedLyricsLabel.textFillProperty();
+    }
+
+    public void setHighlightTextFill(Paint highlightFill) {
+        highlightedLyricsLabel.textFillProperty().set(highlightFill);
+    }
+
+    public Paint getUpcomingTextFill() {
+        return upcomingLyricsLabel.textFillProperty().get();
+    }
+
+    public ObjectProperty<Paint> upcomingTextFillProperty() {
+        return upcomingLyricsLabel.textFillProperty();
+    }
+
+    public void setUpcomingTextFill(Paint upcomingFill) {
+        this.upcomingLyricsLabel.textFillProperty().set(upcomingFill);
     }
 }
