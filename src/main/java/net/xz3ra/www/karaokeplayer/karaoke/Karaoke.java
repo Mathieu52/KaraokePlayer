@@ -201,4 +201,6 @@ public class Karaoke {
     ReadOnlyObjectProperty<Duration> durationProperty() {
         return media.durationProperty();
     }
+
+
 }

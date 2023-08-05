@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.Pane;
@@ -36,6 +37,17 @@ public class Controller {
 
     private Karaoke karaoke;
 
+    private Parent root;
+
+    public Parent getRoot() {
+        return root;
+    }
+
+    public void setRoot(Parent root) {
+        this.root = root;
+        playerControl.setEventRoot(root);
+    }
+
     @FXML
     void initialize() {
 
@@ -52,13 +64,17 @@ public class Controller {
         karaokePlayer = new KaraokePlayer(karaoke);
 
         karaokeView.setKaraokePlayer(karaokePlayer);
+
         playerControl.setKaraokePlayer(karaokePlayer);
 
         karaokePlayer.play();
 
         //  Skip the first part of the song (Testing only)
-        Duration duration = Duration.seconds(18);
-        karaokePlayer.setOnPlaying(() -> karaokePlayer.seek(duration));
+        Duration duration = Duration.seconds(18); //18: start of song
+        karaokePlayer.setOnPlaying(() -> {
+            karaokePlayer.seek(duration);
+            karaokePlayer.seek(Duration.seconds(5));
+        });
     }
 
 }

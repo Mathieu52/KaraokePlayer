@@ -2,6 +2,7 @@ package net.xz3ra.www.karaokeplayer;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
@@ -21,31 +22,16 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("fxml/main.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
+        Parent root = fxmlLoader.load();
+
+        Scene scene = new Scene(root, 320, 240);
+
+        Controller controller = fxmlLoader.getController();
+        controller.setRoot(root);
+
         stage.setTitle("Hello!");
         stage.setScene(scene);
         stage.show();
-
-        /*
-        try {
-            Karaoke karaoke = new Karaoke("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower.skf");
-            KaraokePlayer karaokePlayer = new KaraokePlayer(karaoke);
-            karaokePlayer.setOnReady(() -> karaokePlayer.play());
-            karaokePlayer.lyricsIndexProperty().addListener(((observable, oldValue, newValue) -> {
-                if (newValue != null) {
-                    System.out.println(newValue);
-                }
-            }));
-           // karaokePlayer.setOnPlaying(() -> System.out.println(karaokePlayer.getActiveParagraph()));
-        } catch (UnsupportedFileTypeException e) {
-            e.showAlert();
-            e.printStackTrace();
-        } catch (MissingFilesException e) {
-            e.showAlert();
-            e.printStackTrace();
-        }
-
-         */
     }
 
     public static void main(String[] args) {

@@ -12,6 +12,7 @@ import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -55,7 +56,6 @@ public class KaraokeView extends StackPane {
         upcomingLyricsMask = new Pane();
 
         initGraphics();
-        initProperty();
     }
 
     public KaraokeView(KaraokePlayer player) {
@@ -64,15 +64,27 @@ public class KaraokeView extends StackPane {
     }
 
     public void setKaraokePlayer(KaraokePlayer player) {
-        this.player = player;
+        if (player != null) {
+            this.player = player;
 
+            if (player.getStatus() != null && player.getStatus() != MediaPlayer.Status.UNKNOWN) {
+                initBindings();
+            }
+
+            player.statusProperty().addListener(((observable, oldValue, newValue) -> {
+                if (newValue == MediaPlayer.Status.READY) {
+                    initBindings();
+                }
+            }));
+
+            mediaView.setMediaPlayer(player.getMediaPlayer());
+        }
+    }
+
+    protected void initBindings() {
         highlightedLyricsLabel.textProperty().bind(player.activeParagraphProperty());
         upcomingLyricsLabel.textProperty().bind(player.activeParagraphProperty());
 
-        mediaView.setMediaPlayer(player.getMediaPlayer());
-    }
-
-    private void initProperty() {
         relativeFontProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 font = generateFont();
@@ -111,7 +123,9 @@ public class KaraokeView extends StackPane {
         AnimationTimer animationTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                updateLabels(player.getActiveParagraphIndex());
+                if (player != null) {
+                    updateLabels(player.getActiveParagraphIndex());
+                }
             }
         };
 
@@ -128,7 +142,9 @@ public class KaraokeView extends StackPane {
             upcomingLyricsLabel.setFont(font);
         }
 
-        Platform.runLater(() -> updateLabels(player.getActiveParagraphIndex()));
+        if (player != null) {
+            Platform.runLater(() -> updateLabels(player.getActiveParagraphIndex()));
+        }
     }
 
     private Font generateFont() {
