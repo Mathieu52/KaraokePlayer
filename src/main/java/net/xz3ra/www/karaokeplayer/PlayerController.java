@@ -5,10 +5,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.control.Slider;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
 import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
@@ -18,7 +14,7 @@ import net.xz3ra.www.karaokeplayer.karaoke.KaraokeView;
 import net.xz3ra.www.karaokeplayer.karaoke.control.KaraokePlayerControl;
 import net.xz3ra.www.karaokeplayer.manager.TimeManager;
 
-public class Controller {
+public class PlayerController {
 
     @FXML
     private ResourceBundle resources;
@@ -45,14 +41,11 @@ public class Controller {
 
     public void setRoot(Parent root) {
         this.root = root;
-        playerControl.setEventRoot(root);
     }
 
-    @FXML
-    void initialize() {
-
+    void loadFile(String path) {
         try {
-            karaoke = new Karaoke("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower - vocal");
+            karaoke = new Karaoke(path);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (UnsupportedFileTypeException e) {
@@ -63,18 +56,16 @@ public class Controller {
 
         karaokePlayer = new KaraokePlayer(karaoke);
 
+        playerControl.setDisable(false);
+
         karaokeView.setKaraokePlayer(karaokePlayer);
 
         playerControl.setKaraokePlayer(karaokePlayer);
+    }
 
-        karaokePlayer.play();
-
-        //  Skip the first part of the song (Testing only)
-        Duration duration = Duration.seconds(18); //18: start of song
-        karaokePlayer.setOnPlaying(() -> {
-            karaokePlayer.seek(duration);
-            karaokePlayer.seek(Duration.seconds(5));
-        });
+    @FXML
+    void initialize() {
+        playerControl.setEventRoot(karaokeView.getParent());
     }
 
 }

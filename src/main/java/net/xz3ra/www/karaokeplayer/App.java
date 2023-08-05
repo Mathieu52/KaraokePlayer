@@ -4,13 +4,11 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
-import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
-import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
-import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
-import net.xz3ra.www.karaokeplayer.karaoke.KaraokePlayer;
 
+import java.awt.*;
+import java.awt.desktop.OpenFilesEvent;
+import java.awt.desktop.OpenFilesHandler;
 import java.io.IOException;
 
 /**
@@ -18,6 +16,9 @@ import java.io.IOException;
  */
 
 public class App extends Application {
+    static PlayerController playerController;
+
+    static Runnable onStartComplete;
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -26,15 +27,40 @@ public class App extends Application {
 
         Scene scene = new Scene(root, 320, 240);
 
-        Controller controller = fxmlLoader.getController();
-        controller.setRoot(root);
+        playerController = fxmlLoader.getController();
+        playerController.setRoot(root);
+
+        stage.setOnShowing((e) -> playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower - vocal"));
 
         stage.setTitle("Hello!");
         stage.setScene(scene);
         stage.show();
+
+        if (onStartComplete != null) {
+            onStartComplete.run();
+        }
     }
 
     public static void main(String[] args) {
+        if (args.length > 0) {
+            onStartComplete = () -> playerController.loadFile(args[0]);
+        }
+
         launch();
+    }
+
+    static {
+        try {
+            Desktop.getDesktop().setOpenFileHandler(new FileHandler());
+        } catch (Exception ex) {
+        }
+    }
+
+    public static class FileHandler implements OpenFilesHandler {
+
+        @Override
+        public void openFiles(OpenFilesEvent e) {
+            onStartComplete = () -> playerController.loadFile(e.getFiles().get(0).getAbsolutePath());
+        }
     }
 }

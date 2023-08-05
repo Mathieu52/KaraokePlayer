@@ -48,7 +48,7 @@
 
 <?import net.xz3ra.www.karaokeplayer.karaoke.KaraokeView?>
 <?import net.xz3ra.www.karaokeplayer.karaoke.control.KaraokePlayerControl?>
-<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.xz3ra.www.karaokeplayer.Controller">
+<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.xz3ra.www.karaokeplayer.PlayerController">
   <children>
     <MenuBar VBox.vgrow="NEVER" useSystemMenuBar="false">
       <menus>
@@ -91,9 +91,9 @@
     </MenuBar>
       <AnchorPane VBox.vgrow="ALWAYS">
          <children>
-            <KaraokeView fx:id="karaokeView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+            <KaraokeView fx:id="karaokeView" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
              <HBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                <KaraokePlayerControl fx:id="playerControl"/>
+                <KaraokePlayerControl fx:id="playerControl" disable="true"/>
                <padding>
                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>

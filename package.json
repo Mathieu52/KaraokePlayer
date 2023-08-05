@@ -9,6 +9,11 @@
     "jdeploy": {
         "jdk": false,
         "javaVersion": "17",
+        "documentTypes": [{
+            "extension": "skf",
+            "custom": true,
+            "mimetype": "Sing along Karaoke File"
+        }],
         "jar": "target/classes/sample2-1.0.0.jar",
         "javafx": true,
         "title": "KaraokePlayer"

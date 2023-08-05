@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 public class KaraokePlayerControl extends StackPane implements Initializable {
     public static final String FXML_PATH = "/net/xz3ra/www/karaokeplayer/fxml/playerUI.fxml";
     public static final String DURATION_FORMAT = "%02d:%02d"; //%02d:%02d
+    private static final Duration SPEED_UP_DURATION = Duration.seconds(2.5);
     private KaraokePlayer karaokePlayer;
 
     private Parent eventRoot;
@@ -127,7 +128,7 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
 
         initKeyEvents();
     }
-    
+
     //  ********************* PRIVATE *********************
 
     private void initTimeSliderListener() {
@@ -147,20 +148,25 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
         timeSlider.valueChangingProperty().addListener((observableValue, oldBoolean, newBoolean) -> {
             if (newBoolean != null) {
                 sliderChanging = newBoolean;
+                MediaPlayer.Status status = karaokePlayer.getStatus();
                 if (newBoolean) {
-                    playerWasPlaying = karaokePlayer.getStatus() == MediaPlayer.Status.PLAYING;
-                    karaokePlayer.pause();
-                } else {
-                    if (playerWasPlaying) {
-                        karaokePlayer.play();
-                        karaokePlayer.statusProperty().addListener(onPlayingUpdateValue);
+                    playerWasPlaying = status == MediaPlayer.Status.PLAYING;
+                    if (status == MediaPlayer.Status.PLAYING) {
+                        karaokePlayer.pause();
                     }
+                } else if (playerWasPlaying) {
+                    karaokePlayer.play();
+                    karaokePlayer.statusProperty().addListener(onPlayingUpdateValue);
                 }
+
             }
         });
         timeSlider.valueProperty().addListener((observableValue, oldValue, newValue) -> {
             if (sliderChanging && newValue != null) {
                 karaokePlayer.seek(Duration.seconds(newValue.doubleValue()));
+                if (karaokePlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+                    karaokePlayer.pause();
+                }
             }
         });
     }
@@ -179,12 +185,22 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
                     event.consume();
                 }
             });
+
             eventRoot.addEventFilter(KeyEvent.KEY_RELEASED, (KeyEvent event) -> {
                 boolean consumeEvent = true;
                 switch (event.getCode()) {
-                    case SPACE -> {playButton.disarm(); playButton.fire();}
-                    case LEFT -> {leftButton.disarm(); leftButton.fire();}
-                    case RIGHT -> {rightButton.disarm(); rightButton.fire();}
+                    case SPACE -> {
+                        playButton.disarm();
+                        playButton.fire();
+                    }
+                    case LEFT -> {
+                        leftButton.disarm();
+                        leftButton.fire();
+                    }
+                    case RIGHT -> {
+                        rightButton.disarm();
+                        rightButton.fire();
+                    }
                     default -> consumeEvent = false;
                 }
                 if (consumeEvent) {
@@ -200,6 +216,7 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
             timeSlider.setValue(time.toSeconds());
         }
     }
+
     private void updateDuration(Duration duration) {
         if (duration != null) {
             durationLabel.setText(formatDuration(duration));
@@ -211,7 +228,7 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
     void leftButtonAction(ActionEvent event) {
         if (karaokePlayer != null) {
             Duration time = karaokePlayer.getCurrentTime();
-            karaokePlayer.seek(time.subtract(Duration.seconds(5)));
+            karaokePlayer.seek(time.subtract(SPEED_UP_DURATION));
         }
     }
 
@@ -219,9 +236,9 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
     void playButtonAction(ActionEvent event) {
         if (karaokePlayer != null) {
             MediaPlayer.Status status = karaokePlayer.getStatus();
-            if (status == MediaPlayer.Status.PLAYING || status == MediaPlayer.Status.READY) {
+            if (status == MediaPlayer.Status.PLAYING) {
                 karaokePlayer.pause();
-            } else if (status == MediaPlayer.Status.PAUSED) {
+            } else if (status == MediaPlayer.Status.PAUSED || status == MediaPlayer.Status.READY) {
                 karaokePlayer.play();
             }
         }
@@ -231,7 +248,7 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
     void rightButtonAction(ActionEvent event) {
         if (karaokePlayer != null) {
             Duration time = karaokePlayer.getCurrentTime();
-            karaokePlayer.seek(time.add(Duration.seconds(5)));
+            karaokePlayer.seek(time.add(SPEED_UP_DURATION));
         }
     }
 
