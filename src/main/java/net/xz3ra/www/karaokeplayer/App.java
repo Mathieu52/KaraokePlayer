@@ -10,6 +10,9 @@ import java.awt.*;
 import java.awt.desktop.OpenFilesEvent;
 import java.awt.desktop.OpenFilesHandler;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * JavaFX App
@@ -33,6 +36,14 @@ public class App extends Application {
         stage.setTitle("Hello!");
         stage.setScene(scene);
         stage.show();
+
+        /*
+        playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower - video.skf");
+
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+
+        executorService.schedule(() -> playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower"), 5, TimeUnit.SECONDS);
+         */
 
         if (onStartComplete != null) {
             onStartComplete.run();

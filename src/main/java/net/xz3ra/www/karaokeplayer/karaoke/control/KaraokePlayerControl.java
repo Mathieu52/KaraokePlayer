@@ -3,6 +3,7 @@ package net.xz3ra.www.karaokeplayer.karaoke.control;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -31,9 +32,9 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
 
     private Parent eventRoot;
 
-    private boolean playerWasPlaying;
+    private boolean playerWasPlaying = false;
 
-    private boolean sliderChanging;
+    private boolean sliderChanging = false;
 
     @FXML
     private Label durationLabel;
@@ -59,6 +60,13 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
     @FXML
     private Slider volumeSlider;
 
+    //  Listeners
+    private ChangeListener<Duration> playerCurrentTimeListener;
+    private ChangeListener<Duration> playerCycleDurationListener;
+    private ChangeListener<MediaPlayer.Status> playerStatusListener;
+    private EventHandler<KeyEvent> keyPressedHandler;
+    private EventHandler<KeyEvent> keyReleasedHandler;
+
     public KaraokePlayerControl() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(FXML_PATH));
         fxmlLoader.setController(this);
@@ -66,6 +74,10 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
 
         this.getChildren().add(root);
         this.setAlignment(Pos.CENTER);
+
+        initKaraokePlayerListener();
+        initTimeSliderListener();
+        initKeyHandlers();
     }
 
     //  ********************* PUBLIC *********************
@@ -81,18 +93,29 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
 
     public void setKaraokePlayer(KaraokePlayer karaokePlayer) {
         if (karaokePlayer != null) {
-            this.karaokePlayer = karaokePlayer;
+            removeKaraokePlayerListener(this.karaokePlayer);
+            transferKaraokePlayerValues(this.karaokePlayer, karaokePlayer);
 
             if (karaokePlayer.getStatus() != null && karaokePlayer.getStatus() == MediaPlayer.Status.READY) {
-                initBindings();
+                addKaraokePlayerListener(karaokePlayer);
             }
 
+            if (this.karaokePlayer != null) {
+                this.karaokePlayer.statusProperty().removeListener(playerStatusListener);
+            }
 
-            karaokePlayer.statusProperty().addListener(((observable, oldValue, newValue) -> {
+            playerStatusListener = (observable, oldValue, newValue) -> {
                 if (newValue == MediaPlayer.Status.READY) {
-                    Platform.runLater(this::initBindings);
+                    Platform.runLater(() -> {
+                        addKaraokePlayerListener(karaokePlayer);
+                        updateTime(karaokePlayer.getCurrentTime());
+                        updateDuration(karaokePlayer.getTotalDuration());
+                    });
                 }
-            }));
+            };
+            karaokePlayer.statusProperty().addListener(playerStatusListener);
+
+            this.karaokePlayer = karaokePlayer;
         }
     }
 
@@ -101,32 +124,49 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
     }
 
     public void setEventRoot(Parent eventRoot) {
-        this.eventRoot = eventRoot;
+        if (eventRoot != null) {
+            updateKeyHandlers(this.eventRoot, eventRoot);
+            this.eventRoot = eventRoot;
+        }
     }
 
     //  ********************* PROTECTED *********************
 
-    protected void initBindings() {
-        karaokePlayer.volumeProperty().bindBidirectional(volumeSlider.valueProperty());
-
-        karaokePlayer.currentTimeProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue != null && !sliderChanging) {
+    protected void initKaraokePlayerListener() {
+        playerCurrentTimeListener = (observable, oldValue, newValue) -> {
+            System.out.println("test");
+            if (newValue != null) {
                 updateTime(newValue);
             }
-        }));
+        };
 
-        karaokePlayer.cycleDurationProperty().addListener(((observable, oldValue, newValue) -> {
+        playerCycleDurationListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
                 updateDuration(newValue);
             }
-        }));
+        };
+    }
 
-        initTimeSliderListener();
+    protected void addKaraokePlayerListener(KaraokePlayer karaokePlayer) {
+        if (karaokePlayer != null) {
+            karaokePlayer.volumeProperty().bindBidirectional(volumeSlider.valueProperty());
+            karaokePlayer.currentTimeProperty().addListener(playerCurrentTimeListener);
+            karaokePlayer.cycleDurationProperty().addListener(playerCycleDurationListener);
+        }
+    }
 
-        updateTime(karaokePlayer.getCurrentTime());
-        updateDuration(karaokePlayer.getTotalDuration());
+    protected void transferKaraokePlayerValues(KaraokePlayer oldKaraokePlayer, KaraokePlayer newKaraokePlayer) {
+        if (oldKaraokePlayer != null && newKaraokePlayer != null) {
+            newKaraokePlayer.setVolume(oldKaraokePlayer.getVolume());
+        }
+    }
 
-        initKeyEvents();
+    protected void removeKaraokePlayerListener(KaraokePlayer karaokePlayer) {
+        if (karaokePlayer != null) {
+            karaokePlayer.volumeProperty().unbindBidirectional(volumeSlider.valueProperty());
+            karaokePlayer.currentTimeProperty().removeListener(playerCurrentTimeListener);
+            karaokePlayer.cycleDurationProperty().removeListener(playerCycleDurationListener);
+        }
     }
 
     //  ********************* PRIVATE *********************
@@ -134,7 +174,7 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
     private void initTimeSliderListener() {
         ChangeListener<MediaPlayer.Status>[] listenerHolder = new ChangeListener[1];
         ChangeListener<MediaPlayer.Status> onPlayingUpdateValue = (observableValue, oldStatus, newStatus) -> {
-            if (newStatus == MediaPlayer.Status.PLAYING) {
+            if (karaokePlayer != null && newStatus == MediaPlayer.Status.PLAYING) {
                 Platform.runLater(() -> karaokePlayer.seek(Duration.seconds(timeSlider.getValue())));
 
                 // Remove the listener using the stored reference
@@ -145,8 +185,8 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
         // Store the lambda reference in the array
         listenerHolder[0] = onPlayingUpdateValue;
 
-        timeSlider.valueChangingProperty().addListener((observableValue, oldBoolean, newBoolean) -> {
-            if (newBoolean != null) {
+        ChangeListener<Boolean> sliderValueChangingListener = (observableValue, oldBoolean, newBoolean) -> {
+            if (karaokePlayer != null && newBoolean != null) {
                 sliderChanging = newBoolean;
                 MediaPlayer.Status status = karaokePlayer.getStatus();
                 if (newBoolean) {
@@ -160,61 +200,87 @@ public class KaraokePlayerControl extends StackPane implements Initializable {
                 }
 
             }
-        });
-        timeSlider.valueProperty().addListener((observableValue, oldValue, newValue) -> {
-            if (sliderChanging && newValue != null) {
-                karaokePlayer.seek(Duration.seconds(newValue.doubleValue()));
-                if (karaokePlayer.getStatus() == MediaPlayer.Status.PLAYING) {
-                    karaokePlayer.pause();
+        };
+
+        ChangeListener<Number> sliderValueListener = (observableValue, oldValue, newValue) -> {
+            if (karaokePlayer != null && newValue != null) {
+                if (karaokePlayer.getStatus() == MediaPlayer.Status.READY) {
+                    updateTimeLabel(Duration.seconds(newValue.doubleValue()));
+                }
+                if (sliderChanging) {
+
+                    karaokePlayer.seek(Duration.seconds(newValue.doubleValue()));
+                    if (karaokePlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+                        karaokePlayer.pause();
+                    }
                 }
             }
-        });
+        };
+
+        timeSlider.valueChangingProperty().addListener(sliderValueChangingListener);
+        timeSlider.valueProperty().addListener(sliderValueListener);
     }
 
-    private void initKeyEvents() {
-        if (eventRoot != null) {
-            eventRoot.addEventFilter(KeyEvent.KEY_PRESSED, (KeyEvent event) -> {
-                boolean consumeEvent = true;
-                switch (event.getCode()) {
-                    case SPACE -> playButton.arm();
-                    case LEFT -> leftButton.arm();
-                    case RIGHT -> rightButton.arm();
-                    default -> consumeEvent = false;
-                }
-                if (consumeEvent) {
-                    event.consume();
-                }
-            });
+    private void initKeyHandlers() {
+        keyPressedHandler = (KeyEvent event) -> {
+            boolean consumeEvent = true;
+            switch (event.getCode()) {
+                case SPACE -> playButton.arm();
+                case LEFT -> leftButton.arm();
+                case RIGHT -> rightButton.arm();
+                default -> consumeEvent = false;
+            }
+            if (consumeEvent) {
+                event.consume();
+            }
+        };
 
-            eventRoot.addEventFilter(KeyEvent.KEY_RELEASED, (KeyEvent event) -> {
-                boolean consumeEvent = true;
-                switch (event.getCode()) {
-                    case SPACE -> {
-                        playButton.disarm();
-                        playButton.fire();
-                    }
-                    case LEFT -> {
-                        leftButton.disarm();
-                        leftButton.fire();
-                    }
-                    case RIGHT -> {
-                        rightButton.disarm();
-                        rightButton.fire();
-                    }
-                    default -> consumeEvent = false;
+        keyReleasedHandler = (KeyEvent event) -> {
+            boolean consumeEvent = true;
+            switch (event.getCode()) {
+                case SPACE -> {
+                    playButton.disarm();
+                    playButton.fire();
                 }
-                if (consumeEvent) {
-                    event.consume();
+                case LEFT -> {
+                    leftButton.disarm();
+                    leftButton.fire();
                 }
-            });
+                case RIGHT -> {
+                    rightButton.disarm();
+                    rightButton.fire();
+                }
+                default -> consumeEvent = false;
+            }
+            if (consumeEvent) {
+                event.consume();
+            }
+        };
+    }
+
+    private void updateKeyHandlers(Parent oldEventRoot, Parent newEventRoot) {
+        if (oldEventRoot != null) {
+            oldEventRoot.removeEventFilter(KeyEvent.KEY_PRESSED, keyPressedHandler);
+            oldEventRoot.removeEventFilter(KeyEvent.KEY_RELEASED, keyReleasedHandler);
+        }
+
+        if (newEventRoot != null) {
+            newEventRoot.addEventFilter(KeyEvent.KEY_PRESSED, keyPressedHandler);
+            newEventRoot.addEventFilter(KeyEvent.KEY_RELEASED, keyReleasedHandler);
         }
     }
 
     private void updateTime(Duration time) {
         if (time != null) {
-            timeLabel.setText(formatDuration(time));
-            timeSlider.setValue(time.toSeconds());
+            updateTimeLabel(time);
+            if (!sliderChanging) {
+                timeSlider.setValue(time.toSeconds());
+            }
         }
+    }
+
+    private void updateTimeLabel(Duration time) {
+        timeLabel.setText(formatDuration(time));
     }
 
     private void updateDuration(Duration duration) {
