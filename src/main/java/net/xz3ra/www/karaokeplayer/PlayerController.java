@@ -54,6 +54,7 @@ public class PlayerController {
             throw new RuntimeException(e);
         }
 
+        karaokePlayer.dispose();
         karaokePlayer = new KaraokePlayer(karaoke);
 
         playerControl.setDisable(false);
