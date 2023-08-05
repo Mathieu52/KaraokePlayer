@@ -30,8 +30,6 @@ public class App extends Application {
         playerController = fxmlLoader.getController();
         playerController.setRoot(root);
 
-        stage.setOnShowing((e) -> playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower - vocal"));
-
         stage.setTitle("Hello!");
         stage.setScene(scene);
         stage.show();
@@ -60,7 +58,11 @@ public class App extends Application {
 
         @Override
         public void openFiles(OpenFilesEvent e) {
-            onStartComplete = () -> playerController.loadFile(e.getFiles().get(0).getAbsolutePath());
+            if (playerController == null) {
+                onStartComplete = () -> playerController.loadFile(e.getFiles().get(0).getAbsolutePath());
+            } else {
+                playerController.loadFile(e.getFiles().get(0).getAbsolutePath());
+            }
         }
     }
 }
