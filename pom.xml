@@ -6,11 +6,38 @@
         <version>1.0.7</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.jdeploy.demos</groupId>
-    <artifactId>sample</artifactId>
-    <version>1.0.0</version>
+    <groupId>net.xz3ra.www</groupId>
+    <artifactId>karaokeplayer</artifactId>
+    <version>1.2.3</version>
+    <dependencies>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>19</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>19</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>19</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>12.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>20.0.2</version>
+        </dependency>
+    </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.main.class>org.openjfx.App</maven.compiler.main.class>
+        <maven.compiler.main.class>net.xz3ra.www.karaokeplayer.App</maven.compiler.main.class>
     </properties>
 </project>
