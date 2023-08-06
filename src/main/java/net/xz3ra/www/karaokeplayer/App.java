@@ -35,7 +35,7 @@ public class App extends Application {
         stage.show();
 
 
-        playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower - Video");
+        //playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower - Video");
 
         //ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
