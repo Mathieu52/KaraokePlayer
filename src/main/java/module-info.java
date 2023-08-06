@@ -15,6 +15,6 @@ module org.openjfx {
     exports net.xz3ra.www.karaokeplayer.karaoke;
     opens net.xz3ra.www.karaokeplayer.karaoke;
 
-    exports net.xz3ra.www.karaokeplayer.karaoke.control;
-    opens net.xz3ra.www.karaokeplayer.karaoke.control;
+    exports net.xz3ra.www.karaokeplayer.media;
+    opens net.xz3ra.www.karaokeplayer.media;
 }

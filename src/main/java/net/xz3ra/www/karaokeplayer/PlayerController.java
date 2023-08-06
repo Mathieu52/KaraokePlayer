@@ -5,14 +5,12 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
-import javafx.util.Duration;
 import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
 import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
 import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
 import net.xz3ra.www.karaokeplayer.karaoke.KaraokePlayer;
 import net.xz3ra.www.karaokeplayer.karaoke.KaraokeView;
-import net.xz3ra.www.karaokeplayer.karaoke.control.KaraokePlayerControl;
-import net.xz3ra.www.karaokeplayer.manager.TimeManager;
+import net.xz3ra.www.karaokeplayer.media.MediaPlayerControl;
 
 public class PlayerController {
 
@@ -25,9 +23,7 @@ public class PlayerController {
     @FXML
     private KaraokeView karaokeView;
     @FXML
-    private KaraokePlayerControl playerControl;
-
-    private TimeManager timeManager = new TimeManager();
+    private MediaPlayerControl playerControl;
 
     private KaraokePlayer karaokePlayer;
 
@@ -54,14 +50,20 @@ public class PlayerController {
             throw new RuntimeException(e);
         }
 
-        karaokePlayer.dispose();
-        karaokePlayer = new KaraokePlayer(karaoke);
+        KaraokePlayer oldKaraokePlayer = karaokePlayer;
+        try {
+            karaokePlayer = new KaraokePlayer(karaoke);
 
-        playerControl.setDisable(false);
+            playerControl.setDisable(false);
 
-        karaokeView.setKaraokePlayer(karaokePlayer);
+            karaokeView.setKaraokePlayer(karaokePlayer);
 
-        playerControl.setKaraokePlayer(karaokePlayer);
+            playerControl.setMediaPlayer(karaokePlayer.getMediaPlayer());
+        } finally {
+            if (oldKaraokePlayer != null) {
+                oldKaraokePlayer.dispose();
+            }
+        }
     }
 
     @FXML
