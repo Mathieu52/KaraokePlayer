@@ -21,8 +21,6 @@ import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class Karaoke {
 
     private static final String TEMPORARY_DIRECTORY = System.getProperty("java.io.tmpdir");
@@ -38,38 +36,90 @@ public class Karaoke {
     private final String title;
 
     private final Media media;
-    private boolean isMusicOnly;
 
     private final List<TimedSection> sections;
     private final String lyrics;
+    private Karaoke(String title, Media media, List<TimedSection> sections) {
+        this.title = title;
+        this.media = media;
+        this.sections = sections;
+        this.lyrics = sectionsToString(sections);
+    }
 
-    public Karaoke(String path) throws IOException, UnsupportedFileTypeException, MissingFilesException {
+    public static Karaoke load(String path) throws UnsupportedFileTypeException, IOException, MissingFilesException {
+        Path file = Paths.get(path);
+
+        if (Files.isDirectory(file)) {
+            return loadFromFolder(file.toString());
+        }
+
+        if (Files.isRegularFile(file) && isKaraokeFile(file)) {
+            return loadFromKaraokeFile(file.toString());
+        }
+
+        throw new UnsupportedFileTypeException("File " + file + " is not supported");
+    }
+
+    public static Karaoke loadFromFolder(String path) throws IOException, UnsupportedFileTypeException, MissingFilesException {
         Path file = Paths.get(path);
 
         if (!Files.exists(file)) {
             throw new FileNotFoundException("File: " + path + " does not exist");
         }
-        if (!Files.isDirectory(file) && (Files.isRegularFile(file) && !file.getFileName().toString().matches(FILE_PATTERN))) {
-            throw new UnsupportedFileTypeException("Karaoke can only be loaded from a directory or a ." + FILE_TYPE + " file");
+        if (!Files.isDirectory(file)) {
+            throw new UnsupportedFileTypeException(path + " isn't a directory");
         }
 
-        title = loadTitle(file.toString());
+        String title = file.getFileName().toString();
 
-        if (file.getFileName().toString().matches(FILE_PATTERN)) {
-            ArchiveUtil.unzipFolder(file, Path.of(TEMPORARY_DIRECTORY));
-            file = Path.of(TEMPORARY_DIRECTORY, title);
-        }
-
-        try {
-            sections = loadSections(file);
-            lyrics = generateLyrics(sections);
-            media = loadMedia(file);
-        } catch (FileNotFoundException e) {
-           throw new MissingFilesException(e.getMessage());
-        }
+        return getKaraoke(file, title);
     }
 
-    private File findMediaFile(Path path) {
+    public static Karaoke loadFromKaraokeFile(String path) throws IOException, UnsupportedFileTypeException, MissingFilesException {
+        Path file = Paths.get(path);
+
+        if (!Files.exists(file)) {
+            throw new FileNotFoundException("File: " + path + " does not exist");
+        }
+        if (Files.isDirectory(file) || !isKaraokeFile(file)) {
+            throw new UnsupportedFileTypeException(path + " isn't a ." + FILE_TYPE + " file");
+        }
+
+        String title = file.getFileName().toString().replaceFirst("\\." + FILE_TYPE + "$", "");
+
+        ArchiveUtil.unzipFolder(file, Path.of(TEMPORARY_DIRECTORY));
+        file = Path.of(TEMPORARY_DIRECTORY, title);
+
+        return getKaraoke(file, title);
+    }
+
+    public static boolean isKaraokeFile(Path path) {
+        return path.getFileName().toString().matches(FILE_PATTERN);
+    }
+
+    public static boolean isKaraokeFile(File file) {
+        return isKaraokeFile(file.toPath());
+    }
+
+    public static boolean isKaraokeFile(String path) {
+        return isKaraokeFile(Paths.get(path));
+    }
+
+
+    private static Karaoke getKaraoke(Path file, String title) throws UnsupportedFileTypeException, MissingFilesException {
+        List<TimedSection> sections = null;
+        Media media = null;
+        try {
+            sections = loadSectionsFromFolder(file);
+            media = loadMediaFromFolder(file);
+        } catch (FileNotFoundException e) {
+            throw new MissingFilesException(e.getMessage());
+        }
+
+        return new Karaoke(title, media, sections);
+    }
+
+    private static File findMediaFile(Path path) {
         for (File file : path.toFile().listFiles()) {
             if (FileUtils.removeExtension(file.getName()).equals(MEDIA_FILE)) {
                 return file;
@@ -79,7 +129,7 @@ public class Karaoke {
         return null;
     }
 
-    private Media loadMedia(Path path) throws UnsupportedFileTypeException, FileNotFoundException {
+    protected static Media loadMediaFromFolder(Path path) throws UnsupportedFileTypeException, FileNotFoundException {
         File mediaFile = findMediaFile(path);
 
         if (mediaFile == null || !mediaFile.exists()) {
@@ -88,18 +138,14 @@ public class Karaoke {
 
         String fileName = mediaFile.getName();
 
-        if (fileName.matches(VIDEO_PATTERN)) {
-            isMusicOnly = false;
-        } else if (fileName.matches(AUDIO_PATTERN)) {
-            isMusicOnly = true;
-        } else {
+        if (!fileName.matches(VIDEO_PATTERN) && !fileName.matches(AUDIO_PATTERN)) {
             throw new UnsupportedFileTypeException("A Karaoke can only support video and audio files as its media.");
         }
 
         return new Media(mediaFile.toURI().toString());
     }
 
-    private List<TimedSection> loadSections(Path path) throws FileNotFoundException {
+    public static List<TimedSection> loadSectionsFromFolder(Path path) throws FileNotFoundException {
         File labelFile = Path.of(path.toString(), LABEL_FILE).toFile();
 
         if (!labelFile.exists()) {
@@ -151,7 +197,7 @@ public class Karaoke {
         return sections;
     }
 
-    private String generateLyrics(List<TimedSection> sections) {
+    public static String sectionsToString(List<TimedSection> sections) {
         StringBuilder lyrics = new StringBuilder();
 
         for (TimedSection section : sections) {
@@ -161,7 +207,8 @@ public class Karaoke {
         return lyrics.toString();
     }
 
-    private String loadTitle(String path) {
+        /*
+    private String loadTitleFromFile(String path);{
         File file = new File(path);
 
         if (file.isDirectory()) {
@@ -172,6 +219,7 @@ public class Karaoke {
 
         return null;
     }
+     */
 
     public String getTitle() {
         return title;
@@ -180,11 +228,6 @@ public class Karaoke {
     public Media getMedia() {
         return media;
     }
-
-    public boolean isMusicOnly() {
-        return isMusicOnly;
-    }
-
     public List<TimedSection> getSections() {
         return sections;
     }

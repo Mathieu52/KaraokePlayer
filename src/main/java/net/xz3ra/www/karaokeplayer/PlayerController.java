@@ -41,12 +41,14 @@ public class PlayerController {
 
     void loadFile(String path) {
         try {
-            karaoke = new Karaoke(path);
+            karaoke = Karaoke.load(path);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (UnsupportedFileTypeException e) {
-            throw new RuntimeException(e);
+            e.showAlert();
+            //throw new RuntimeException(e);
         } catch (MissingFilesException e) {
+            e.showAlert();
             throw new RuntimeException(e);
         }
 

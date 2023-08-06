@@ -141,7 +141,6 @@ public class MediaPlayerControl extends StackPane implements Initializable {
 
     protected void initKaraokePlayerListener() {
         playerCurrentTimeListener = (observable, oldValue, newValue) -> {
-            System.out.println("test");
             if (newValue != null) {
                 updateTime(newValue);
             }
