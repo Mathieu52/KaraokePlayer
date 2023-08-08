@@ -13,6 +13,8 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
@@ -21,6 +23,7 @@ import javafx.util.Duration;
 import net.xz3ra.www.karaokeplayer.App;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -337,5 +340,31 @@ public class MediaPlayerControl extends StackPane implements Initializable {
     //  ********************* INITIALIZE *********************
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        initializeImageButton(playButton);
+        initializeImageButton(leftButton);
+        initializeImageButton(rightButton);
+
+        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            int index = (int) Math.ceil(newValue.doubleValue() * 4.0);
+            try {
+                volumeLevelImage.setImage(new Image(getClass().getResource(String.format("volume_%d.png", index)).toURI().toString()));
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public void initializeImageButton(Button button) {
+        ImageView imageView = (ImageView) button.getGraphic();
+        button.setStyle("-fx-background-color: transparent");
+
+        ColorAdjust effect = new ColorAdjust(0, 0, 0, 0);
+        imageView.setEffect(effect);
+
+        button.pressedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                effect.setBrightness(newValue ? -0.1 : 0);
+            }
+        });
     }
 }
