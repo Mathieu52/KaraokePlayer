@@ -25,7 +25,6 @@ jobs:
       - name: Build with Maven
         run: mvn -B package --file pom.xml
       - name: Build App Installer Bundles
-        uses: shannah/jdeploy@master
+        uses: actions/jdeploy@master
         with:
-          target_repository: 'Mathieu52/KaraokePlayer'
           github_token: ${{ github.token }}
