@@ -27,5 +27,6 @@ jobs:
       - name: Build App Installer Bundles
         uses: shannah/jdeploy@master
         with:
+          jdeploy_version: 4.0.22
           target_repository: 'Mathieu52/KaraokePlayer'
           github_token: ${{ github.token }}
