@@ -51,7 +51,7 @@
                <graphic>
                   <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="net/xz3ra/www/karaokeplayer/media/play_button.png" />
+                        <Image url="/net/xz3ra/www/karaokeplayer/media/play_button.png" />
                      </image>
                   </ImageView>
                </graphic>
@@ -62,7 +62,7 @@
                <graphic>
                   <ImageView fitHeight="30.0" fitWidth="56.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="net/xz3ra/www/karaokeplayer/media/forward_button.png" />
+                        <Image url="/net/xz3ra/www/karaokeplayer/media/forward_button.png" />
                      </image>
                   </ImageView>
                </graphic>

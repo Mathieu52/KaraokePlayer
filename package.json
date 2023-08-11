@@ -14,7 +14,7 @@
             "custom": true,
             "mimetype": "Sing along Karaoke File"
         }],
-        "jar": "target/classes/sample2-1.0.0.jar",
+        "jar": "out/artifacts/karaokeplayer_jar/karaokeplayer.jar",
         "javafx": true,
         "title": "KaraokePlayer"
     },
