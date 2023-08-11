@@ -346,7 +346,12 @@ public class MediaPlayerControl extends StackPane implements Initializable {
 
         volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             int index = (int) Math.ceil(newValue.doubleValue() * 4.0);
-            volumeLevelImage.setImage(new Image(String.format("net/xz3ra/www/karaokeplayer/media/volume_%d.png", index)));
+            URL url = getClass().getResource(String.format("/net/xz3ra/www/karaokeplayer/media/volume_%d.png", index));
+            try {
+                volumeLevelImage.setImage(new Image(url.openStream()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 

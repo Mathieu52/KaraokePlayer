@@ -26,7 +26,7 @@
          <children>
             <ImageView fx:id="volumeLevelImage" fitHeight="30.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="net/xz3ra/www/karaokeplayer/media/volume_4.png" />
+                  <Image url="/net/xz3ra/www/karaokeplayer/media/volume_4.png" />
                </image></ImageView>
             <Slider fx:id="volumeSlider" max="1.0" minWidth="-Infinity" value="1.0" HBox.hgrow="ALWAYS" />
          </children>
@@ -37,7 +37,7 @@
                <graphic>
                   <ImageView fitHeight="30.0" fitWidth="56.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="net/xz3ra/www/karaokeplayer/media/backward_button.png" />
+                        <Image url="/net/xz3ra/www/karaokeplayer/media/backward_button.png" />
                      </image>
                   </ImageView>
                </graphic>
