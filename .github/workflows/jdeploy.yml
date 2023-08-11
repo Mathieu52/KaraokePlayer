@@ -27,4 +27,6 @@ jobs:
       - name: Build App Installer Bundles
         uses: actions/jdeploy@master
         with:
+          jdeploy_version: 4.0.23
+          target_repository: ${{ github.repository }}
           github_token: ${{ github.token }}
