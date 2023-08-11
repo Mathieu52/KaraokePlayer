@@ -1,11 +1,11 @@
 {
     "bin": {"sample2-1-0-0": "jdeploy-bundle/jdeploy.js"},
-    "author": "",
+    "author": "Mathieu Durand",
     "description": "A Karaoke Player",
     "main": "index.js",
     "preferGlobal": true,
     "repository": "",
-    "version": "1.0.0",
+    "version": "2.1.2",
     "jdeploy": {
         "jdk": false,
         "javaVersion": "17",
