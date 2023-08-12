@@ -35,7 +35,7 @@ public class App extends Application {
         stage.show();
 
 
-        playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower.skf");
+        //playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/Myf Flower.skf");
 
         //ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
