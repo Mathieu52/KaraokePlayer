@@ -6,77 +6,48 @@ import java.util.zip.*;
 
 public class ArchiveUtil {
     public static void unzipFolder(Path source, Path target) throws IOException {
-
-        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(source.toFile()))) {
-
-            // list files in zip
+            byte[] buffer = new byte[32768];
+            ZipInputStream zis = new ZipInputStream(new FileInputStream(source.toFile()));
             ZipEntry zipEntry = zis.getNextEntry();
-
             while (zipEntry != null) {
-
-                boolean isDirectory = false;
-                // example 1.1
-                // some zip stored files and folders separately
-                // e.g data/
-                //     data/folder/
-                //     data/folder/file.txt
-                if (zipEntry.getName().endsWith(File.separator)) {
-                    isDirectory = true;
-                }
-
-                Path newPath = zipSlipProtect(zipEntry, target);
-
-                if (isDirectory) {
-                    Files.createDirectories(newPath);
+                File newFile = newFile(target.toFile(), zipEntry);
+                if (zipEntry.isDirectory()) {
+                    if (!newFile.isDirectory() && !newFile.mkdirs()) {
+                        throw new IOException("Failed to create directory " + newFile);
+                    }
                 } else {
-
-                    // example 1.2
-                    // some zip stored file path only, need create parent directories
-                    // e.g data/folder/file.txt
-                    if (newPath.getParent() != null) {
-                        if (Files.notExists(newPath.getParent())) {
-                            Files.createDirectories(newPath.getParent());
-                        }
+                    // fix for Windows-created archives
+                    File parent = newFile.getParentFile();
+                    if (!parent.isDirectory() && !parent.mkdirs()) {
+                        throw new IOException("Failed to create directory " + parent);
                     }
 
-                    // copy files, nio
-                    Files.copy(zis, newPath, StandardCopyOption.REPLACE_EXISTING);
-
-                    // copy files, classic
-                    /*try (FileOutputStream fos = new FileOutputStream(newPath.toFile())) {
-                        byte[] buffer = new byte[1024];
-                        int len;
-                        while ((len = zis.read(buffer)) > 0) {
-                            fos.write(buffer, 0, len);
-                        }
-                    }*/
+                    // write file content
+                    FileOutputStream fos = new FileOutputStream(newFile);
+                    int len;
+                    while ((len = zis.read(buffer)) > 0) {
+                        fos.write(buffer, 0, len);
+                    }
+                    fos.close();
                 }
-
                 zipEntry = zis.getNextEntry();
-
             }
+
             zis.closeEntry();
-
-        }
-
+            zis.close();
     }
 
-    public static Path zipSlipProtect(ZipEntry zipEntry, Path targetDir)
-            throws IOException {
+    public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
+        File destFile = new File(destinationDir, zipEntry.getName());
 
-        // test zip slip vulnerability
-        // Path targetDirResolved = targetDir.resolve("../../" + zipEntry.getName());
+        String destDirPath = destinationDir.getCanonicalPath();
+        String destFilePath = destFile.getCanonicalPath();
 
-        Path targetDirResolved = targetDir.resolve(zipEntry.getName());
-
-        // make sure normalized file still has targetDir as its prefix
-        // else throws exception
-        Path normalizePath = targetDirResolved.normalize();
-        if (!normalizePath.startsWith(targetDir)) {
-            throw new IOException("Bad zip entry: " + zipEntry.getName());
+        if (!destFilePath.startsWith(destDirPath + File.separator)) {
+            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
         }
 
-        return normalizePath;
+        return destFile;
     }
 
 }
