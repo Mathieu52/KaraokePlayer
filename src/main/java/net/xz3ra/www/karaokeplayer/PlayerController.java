@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
+import net.xz3ra.www.karaokeplayer.exceptions.ExceptionAlertHandler;
 import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
 import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
 import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
@@ -42,25 +43,21 @@ public class PlayerController {
     void loadFile(String path) {
         try {
             karaoke = Karaoke.load(path);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (UnsupportedFileTypeException e) {
-            e.showAlert();
-            //throw new RuntimeException(e);
-        } catch (MissingFilesException e) {
-            e.showAlert();
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            ExceptionAlertHandler.showAlert(e);
         }
 
         KaraokePlayer oldKaraokePlayer = karaokePlayer;
         try {
-            karaokePlayer = new KaraokePlayer(karaoke);
+            if (karaoke != null) {
+                karaokePlayer = new KaraokePlayer(karaoke);
 
-            playerControl.setDisable(false);
+                playerControl.setDisable(false);
 
-            karaokeView.setKaraokePlayer(karaokePlayer);
+                karaokeView.setKaraokePlayer(karaokePlayer);
 
-            playerControl.setMediaPlayer(karaokePlayer.getMediaPlayer());
+                playerControl.setMediaPlayer(karaokePlayer.getMediaPlayer());
+            }
         } finally {
             if (oldKaraokePlayer != null) {
                 oldKaraokePlayer.dispose();
