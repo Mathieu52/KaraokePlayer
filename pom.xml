@@ -5,6 +5,7 @@
         <groupId>ca.weblite</groupId>
         <version>1.0.7</version>
     </parent>
+    <name>Karaoke Player</name>
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.xz3ra.www</groupId>
     <artifactId>karaokeplayer</artifactId>
