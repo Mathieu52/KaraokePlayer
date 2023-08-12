@@ -9,6 +9,12 @@
     <groupId>net.xz3ra.www</groupId>
     <artifactId>karaokeplayer</artifactId>
     <version>1.2.4</version>
+
+    <!-- More Project Information -->
+    <name>Karaoke Player</name>
+    <description>A simple karaoke player</description>
+    <url>https://github.com/Mathieu52/KaraokePlayer</url>
+
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
