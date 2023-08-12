@@ -3,12 +3,12 @@
     <parent>
         <artifactId>jdeploy-javafx-starter</artifactId>
         <groupId>ca.weblite</groupId>
-        <version>1.1.7</version>
+        <version>1.0.7</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.xz3ra.www</groupId>
     <artifactId>karaokeplayer</artifactId>
-    <version>1.2.3</version>
+    <version>1.2.4</version>
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
