@@ -1,11 +1,11 @@
 {
     "bin": {"sample2-1-0-0": "jdeploy-bundle/jdeploy.js"},
     "author": "Mathieu Durand",
-    "description": "A Karaoke Player",
+    "description": "A Simple Karaoke Player",
     "main": "index.js",
     "preferGlobal": true,
     "repository": "",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "jdeploy": {
         "jdk": false,
         "javaVersion": "17",
@@ -16,14 +16,14 @@
         }],
         "jar": "out/artifacts/karaokeplayer_jar/karaokeplayer.jar",
         "javafx": true,
-        "title": "KaraokePlayer"
+        "title": "Karaoke Player"
     },
     "dependencies": {
         "njre": "^0.2.0",
         "shelljs": "^0.8.4"
     },
     "license": "ISC",
-    "name": "KaraokePlayer",
+    "name": "Karaoke Player",
     "files": ["jdeploy-bundle"],
     "scripts": {"test": "echo \"Error: no test specified\" && exit 1"}
 }
