@@ -53,7 +53,7 @@ public class Karaoke {
             return loadFromFolder(file.toString());
         }
 
-        if (Files.isRegularFile(file) && isKaraokeFile(file)) {
+        if (isKaraokeFile(file)) {
             return loadFromKaraokeFile(file.toString());
         }
 
@@ -81,6 +81,7 @@ public class Karaoke {
         if (!Files.exists(file)) {
             throw new FileNotFoundException("File: " + path + " does not exist");
         }
+
         if (Files.isDirectory(file) || !isKaraokeFile(file)) {
             throw new UnsupportedFileTypeException(path + " isn't a ." + FILE_TYPE + " file");
         }
