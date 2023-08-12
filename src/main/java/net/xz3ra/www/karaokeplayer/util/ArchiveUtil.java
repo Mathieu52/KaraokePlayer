@@ -6,7 +6,7 @@ import java.util.zip.*;
 
 public class ArchiveUtil {
     public static void unzipFolder(Path source, Path target) throws IOException {
-            byte[] buffer = new byte[32768];
+            byte[] buffer = new byte[8192];
             ZipInputStream zis = new ZipInputStream(new FileInputStream(source.toFile()));
             ZipEntry zipEntry = zis.getNextEntry();
             while (zipEntry != null) {
