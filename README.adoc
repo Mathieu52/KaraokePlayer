@@ -4,6 +4,8 @@ A small karaoke player with many features!
 
 == Features
 
-Smooth display
-Easy control
-Custom Karaoke files (.skf / Sing Alongs Karaoke File) are easily creatable using Audacity
+- Smooth display
+
+- Easy control
+
+- Custom Karaoke files (.skf / Sing Alongs Karaoke File) are easily creatable using Audacity
