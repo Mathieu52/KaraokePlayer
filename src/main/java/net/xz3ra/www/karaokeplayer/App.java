@@ -52,7 +52,11 @@ public class App extends Application {
             onStartComplete = () -> playerController.loadFile(args[0]);
         }
 
-        launch();
+        try {
+            launch();
+        } catch (IllegalStateException e) {
+            playerController.loadFile(args[0]);
+        }
     }
 
     static {
