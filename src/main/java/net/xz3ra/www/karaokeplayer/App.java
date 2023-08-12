@@ -35,7 +35,7 @@ public class App extends Application {
         stage.show();
 
 
-        //playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower");
+        //playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/Myf Flower.skf");
 
         //ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
@@ -52,7 +52,11 @@ public class App extends Application {
             onStartComplete = () -> playerController.loadFile(args[0]);
         }
 
-        launch();
+        try {
+            launch();
+        } catch (IllegalStateException e) {
+            playerController.loadFile(args[0]);
+        }
     }
 
     static {
