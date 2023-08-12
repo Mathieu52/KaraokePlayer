@@ -22,6 +22,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Karaoke {
+
+    private static final Path TEMPORARY_DIRECTORY = Paths.get(System.getProperty("user.home"), "Karaoke Player/TEMP");
     public static final String FILE_TYPE = "skf";
     private static final String LABEL_PATTERN = "(?<start>\\d+.\\d+)\\t(?<end>\\d+.\\d+)\\t(?<value>.*)";
     private static final String VIDEO_PATTERN = ".*\\.(mp4|avi|mov|wmv|mkv|flv|mpg)$";
@@ -86,9 +88,8 @@ public class Karaoke {
 
         String title = file.getFileName().toString().replaceFirst("\\." + FILE_TYPE + "$", "");
 
-        Path tempFolder = Files.createTempDirectory("TEMP_DECOMPRESS_KARAOKE_PLAYER");
-        ArchiveUtil.unzipFolder(file, tempFolder);
-        file = Path.of(String.valueOf(tempFolder), title);
+        ArchiveUtil.unzipFolder(file, TEMPORARY_DIRECTORY);
+        file = Path.of(TEMPORARY_DIRECTORY.toString(), title);
 
         return getKaraoke(file, title);
     }
