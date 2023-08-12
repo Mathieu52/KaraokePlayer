@@ -1,12 +1,8 @@
 package net.xz3ra.www.karaokeplayer.exceptions;
 
-import javafx.application.Platform;
 import javafx.scene.control.Alert;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-
-public class MissingFilesException extends Exception {
+public class MissingFilesException extends AlertThrowingException {
     private String message;
 
     public MissingFilesException(String message) {

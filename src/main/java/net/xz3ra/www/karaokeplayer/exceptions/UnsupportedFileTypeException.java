@@ -7,7 +7,7 @@ import javafx.scene.control.Alert.AlertType;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-public class UnsupportedFileTypeException extends Exception {
+public class UnsupportedFileTypeException extends AlertThrowingException {
     private String message;
 
     public UnsupportedFileTypeException(String message) {
