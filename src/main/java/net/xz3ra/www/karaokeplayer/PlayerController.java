@@ -66,7 +66,7 @@ public class PlayerController {
             if (karaoke != null) {
                 karaokePlayer = new KaraokePlayer(karaoke);
 
-                karaokeView.setKaraokePlayer(null);
+                karaokeView.setKaraokePlayer(karaokePlayer);
 
                 playerControl.setMediaPlayer(karaokePlayer.getMediaPlayer());
 
