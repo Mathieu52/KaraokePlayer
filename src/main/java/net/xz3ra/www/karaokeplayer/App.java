@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import net.xz3ra.www.karaokeplayer.exceptions.ExceptionAlertHandler;
 
 import java.awt.*;
 import java.awt.desktop.OpenFilesEvent;
@@ -35,13 +36,6 @@ public class App extends Application {
         stage.setScene(scene);
         stage.show();
 
-        //playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower.skf");
-
-        //ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-
-        //executorService.schedule(() -> playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower"), 5, TimeUnit.SECONDS);
-
-
         if (onStartComplete != null) {
             onStartComplete.run();
         }
@@ -52,18 +46,13 @@ public class App extends Application {
             onStartComplete = () -> playerController.loadFile(args[0]);
         }
 
-        try {
-            launch();
-        } catch (IllegalStateException e) {
-            playerController.loadFile(args[0]);
-        }
+        launch();
     }
 
     static {
         try {
             Desktop.getDesktop().setOpenFileHandler(new FileHandler());
-        } catch (Exception ex) {
-        }
+        } catch (Exception e) {}
     }
 
     public static class FileHandler implements OpenFilesHandler {
