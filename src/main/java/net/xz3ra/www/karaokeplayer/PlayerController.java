@@ -66,12 +66,15 @@ public class PlayerController {
             if (karaoke != null) {
                 karaokePlayer = new KaraokePlayer(karaoke);
 
-                playerControl.setDisable(false);
-
-                karaokeView.setKaraokePlayer(karaokePlayer);
+                karaokeView.setKaraokePlayer(null);
 
                 playerControl.setMediaPlayer(karaokePlayer.getMediaPlayer());
+
+                playerControl.setDisable(false);
             }
+        } catch (Exception e) {
+            //throw new RuntimeException(e);
+            ExceptionAlertHandler.showAlert(e);
         } finally {
             if (oldKaraokePlayer != null) {
                 oldKaraokePlayer.dispose();

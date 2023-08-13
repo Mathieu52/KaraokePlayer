@@ -112,8 +112,10 @@ public class MediaPlayerControl extends StackPane implements Initializable {
         AnimationTimer inactivityCheckLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                boolean isTimeToFade = System.currentTimeMillis() - userLastActionTime > INACTIVITY_FADE_DELAY.toMillis();
-                faded.set(isTimeToFade && getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING);
+                if (getMediaPlayer() != null) {
+                    boolean isTimeToFade = System.currentTimeMillis() - userLastActionTime > INACTIVITY_FADE_DELAY.toMillis();
+                    faded.set(isTimeToFade && getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING);
+                }
             }
         };
 
