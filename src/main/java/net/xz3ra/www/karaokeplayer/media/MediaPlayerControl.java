@@ -31,7 +31,6 @@ import javafx.util.Duration;
 import net.xz3ra.www.karaokeplayer.App;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -86,7 +85,7 @@ public class MediaPlayerControl extends StackPane implements Initializable {
     private EventHandler<KeyEvent> keyPressedHandler;
     private EventHandler<KeyEvent> keyReleasedHandler;
 
-    private EventHandler userActionHandler;
+    private EventHandler<Event> userActionHandler;
 
     public MediaPlayerControl() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(FXML_PATH));
@@ -245,7 +244,7 @@ public class MediaPlayerControl extends StackPane implements Initializable {
     //  ********************* PRIVATE *********************
 
     private void initTimeSliderListener() {
-        ChangeListener<MediaPlayer.Status>[] listenerHolder = new ChangeListener[1];
+        ChangeListener[] listenerHolder = new ChangeListener[1];
         ChangeListener<MediaPlayer.Status> onPlayingUpdateValue = (observableValue, oldStatus, newStatus) -> {
             if (mediaPlayer != null && newStatus == MediaPlayer.Status.PLAYING) {
                 Platform.runLater(() -> getMediaPlayer().seek(Duration.seconds(timeSlider.getValue())));
