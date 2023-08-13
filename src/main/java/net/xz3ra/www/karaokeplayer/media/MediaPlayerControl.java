@@ -1,22 +1,30 @@
 package net.xz3ra.www.karaokeplayer.media;
 
+import javafx.animation.Animation;
+import javafx.animation.AnimationTimer;
+import javafx.animation.Transition;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TreeCell;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
@@ -31,13 +39,21 @@ public class MediaPlayerControl extends StackPane implements Initializable {
     public static final String FXML_PATH = "/net/xz3ra/www/karaokeplayer/fxml/playerUI.fxml";
     public static final String DURATION_FORMAT = "%02d:%02d"; //%02d:%02d
     private static final Duration SPEED_UP_DURATION = Duration.seconds(2.5);
-    private SimpleObjectProperty<MediaPlayer> mediaPlayer = new SimpleObjectProperty<MediaPlayer>(null);
+    private static final Duration INACTIVITY_FADE_DELAY = Duration.seconds(3);
+    private static final Duration FADE_TRANSITION_DURATION = Duration.seconds(0.25);
 
-    private Parent eventRoot;
+    private SimpleObjectProperty<MediaPlayer> mediaPlayer = new SimpleObjectProperty<MediaPlayer>(null);
+    private SimpleBooleanProperty faded = new SimpleBooleanProperty();
+
+    private SimpleObjectProperty<Parent> eventRoot = new SimpleObjectProperty<>();
+    private final Parent root;
 
     private boolean playerWasPlaying = false;
-
     private boolean sliderChanging = false;
+    private long userLastActionTime = 0;
+
+    private final Animation fadeOutAnimation;
+    private final Animation fadeInAnimation;
 
     @FXML
     private Label durationLabel;
@@ -70,18 +86,38 @@ public class MediaPlayerControl extends StackPane implements Initializable {
     private EventHandler<KeyEvent> keyPressedHandler;
     private EventHandler<KeyEvent> keyReleasedHandler;
 
+    private EventHandler userActionHandler;
+
     public MediaPlayerControl() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(FXML_PATH));
         fxmlLoader.setController(this);
-        Parent root = fxmlLoader.load();
+        root = fxmlLoader.load();
 
         this.getChildren().add(root);
         this.setAlignment(Pos.CENTER);
 
+        fadeInAnimation = createFadeTransition(root, 1.0);
+        fadeOutAnimation = createFadeTransition(root, 0.0);
+
         initMediaPlayerProperty();
+        initEventRootProperty();
+        initFadedProperty();
+
         initKaraokePlayerListener();
         initTimeSliderListener();
         initKeyHandlers();
+        initUserActionHandlers();
+
+        // Initialize inactivity check loop
+        AnimationTimer inactivityCheckLoop = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                boolean isTimeToFade = System.currentTimeMillis() - userLastActionTime > INACTIVITY_FADE_DELAY.toMillis();
+                faded.set(isTimeToFade && getMediaPlayer().getStatus() == MediaPlayer.Status.PLAYING);
+            }
+        };
+
+        inactivityCheckLoop.start();
     }
 
     //  ********************* PUBLIC *********************
@@ -117,27 +153,53 @@ public class MediaPlayerControl extends StackPane implements Initializable {
         });
     }
 
-    public Parent getEventRoot() {
-        return eventRoot;
+    private void initEventRootProperty() {
+        eventRootProperty().addListener((observable, oldEventRoot, newEventRoot) -> updateKeyHandlers(oldEventRoot, newEventRoot));
     }
 
-    public void setEventRoot(Parent eventRoot) {
-        if (eventRoot != null) {
-            updateKeyHandlers(this.eventRoot, eventRoot);
-            this.eventRoot = eventRoot;
-        }
+    private void initFadedProperty() {
+        fadedProperty().addListener((observable, oldFadedState, newFadedState) -> {
+            if (newFadedState != null) {
+                (oldFadedState ? fadeOutAnimation : fadeInAnimation).stop();
+                (newFadedState ? fadeOutAnimation : fadeInAnimation).playFromStart();
+            }
+        });
     }
 
     public MediaPlayer getMediaPlayer() {
         return mediaPlayer.get();
     }
 
-    public SimpleObjectProperty<MediaPlayer> playerMediaPropertyProperty() {
+    public SimpleObjectProperty<MediaPlayer> mediaPlayerProperty() {
         return mediaPlayer;
     }
 
     public void setMediaPlayer(MediaPlayer mediaPlayer) {
         this.mediaPlayer.set(mediaPlayer);
+    }
+
+    public Parent getEventRoot() {
+        return eventRoot.get();
+    }
+
+    public SimpleObjectProperty<Parent> eventRootProperty() {
+        return eventRoot;
+    }
+
+    public void setEventRoot(Parent eventRoot) {
+        this.eventRoot.set(eventRoot);
+    }
+
+    public boolean isFaded() {
+        return faded.get();
+    }
+
+    public SimpleBooleanProperty fadedProperty() {
+        return faded;
+    }
+
+    public void setFaded(boolean faded) {
+        this.faded.set(faded);
     }
 
     //  ********************* PROTECTED *********************
@@ -271,13 +333,26 @@ public class MediaPlayerControl extends StackPane implements Initializable {
         if (oldEventRoot != null) {
             oldEventRoot.removeEventFilter(KeyEvent.KEY_PRESSED, keyPressedHandler);
             oldEventRoot.removeEventFilter(KeyEvent.KEY_RELEASED, keyReleasedHandler);
+            oldEventRoot.removeEventHandler(KeyEvent.KEY_TYPED, userActionHandler);
+            oldEventRoot.removeEventHandler(MouseEvent.ANY, userActionHandler);
         }
 
         if (newEventRoot != null) {
             newEventRoot.addEventFilter(KeyEvent.KEY_PRESSED, keyPressedHandler);
             newEventRoot.addEventFilter(KeyEvent.KEY_RELEASED, keyReleasedHandler);
+            newEventRoot.addEventHandler(KeyEvent.KEY_TYPED, userActionHandler);
+            newEventRoot.addEventHandler(MouseEvent.ANY, userActionHandler);
         }
     }
+
+
+    private void initUserActionHandlers() {
+        userActionHandler = (e) -> onUserAction();
+    }
+    private void onUserAction() {
+        userLastActionTime = System.currentTimeMillis();
+    }
+
 
     private void updateTime(Duration time) {
         if (time != null) {
@@ -297,6 +372,28 @@ public class MediaPlayerControl extends StackPane implements Initializable {
             durationLabel.setText(formatDuration(duration));
             timeSlider.setMax(duration.toSeconds());
         }
+    }
+
+    private Animation createFadeTransition(Node target, double targetOpacity) {
+        return new Transition() {
+            {
+                setCycleDuration(FADE_TRANSITION_DURATION);
+            }
+
+            private double startOpacity;
+
+            @Override
+            public void play() {
+                startOpacity = target.getOpacity();
+                super.play();
+            }
+
+            protected void interpolate(double frac) {
+                double opacity = frac * (targetOpacity - startOpacity) + startOpacity;
+                target.setOpacity(opacity);
+            }
+
+        };
     }
 
     @FXML

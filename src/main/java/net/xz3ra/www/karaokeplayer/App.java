@@ -29,13 +29,13 @@ public class App extends Application {
 
         playerController = fxmlLoader.getController();
         playerController.setRoot(root);
+        playerController.setScene(scene);
 
-        stage.setTitle("Hello!");
+        stage.setTitle("Karaoke Player");
         stage.setScene(scene);
         stage.show();
 
-
-        //playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/Myf Flower.skf");
+        //playerController.loadFile("/Users/mathieudurand/Documents/EmboZone - Sky/My Flower.skf");
 
         //ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
