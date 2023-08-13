@@ -1,5 +1,6 @@
 package net.xz3ra.www.karaokeplayer;
 
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.Parent;
@@ -21,24 +22,32 @@ public class PlayerController {
 
     private Karaoke karaoke;
 
-    private Parent root;
+    private SimpleObjectProperty<Parent> root = new SimpleObjectProperty<>();
 
-    private Scene scene;
+    private SimpleObjectProperty<Scene> scene = new SimpleObjectProperty<>();
 
     public Parent getRoot() {
+        return root.get();
+    }
+
+    public SimpleObjectProperty<Parent> rootProperty() {
         return root;
     }
 
     public void setRoot(Parent root) {
-        this.root = root;
+        this.root.set(root);
     }
 
     public Scene getScene() {
+        return scene.get();
+    }
+
+    public SimpleObjectProperty<Scene> sceneProperty() {
         return scene;
     }
 
     public void setScene(Scene scene) {
-        this.scene = scene;
+        this.scene.set(scene);
     }
 
     void loadFile(String path) {
@@ -70,10 +79,10 @@ public class PlayerController {
 
     @FXML
     void initialize() {
-        playerControl.setEventRoot(getRoot());
+        playerControl.eventRootProperty().bind(rootProperty());
         playerControl.fadedProperty().addListener((observable, oldFadedValue, newFadedValue) -> {
-            if (newFadedValue != null && scene != null) {
-                scene.setCursor(newFadedValue ? Cursor.NONE : Cursor.DEFAULT);
+            if (newFadedValue != null && sceneProperty().get() != null) {
+                sceneProperty().get().setCursor(newFadedValue ? Cursor.NONE : Cursor.DEFAULT);
             }
         });
     }
