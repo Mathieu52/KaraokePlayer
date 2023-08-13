@@ -3,8 +3,12 @@ package net.xz3ra.www.karaokeplayer;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import javafx.application.Application;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import net.xz3ra.www.karaokeplayer.exceptions.ExceptionAlertHandler;
 import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
 import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
@@ -32,12 +36,22 @@ public class PlayerController {
 
     private Parent root;
 
+    private Scene scene;
+
     public Parent getRoot() {
         return root;
     }
 
     public void setRoot(Parent root) {
         this.root = root;
+    }
+
+    public Scene getScene() {
+        return scene;
+    }
+
+    public void setScene(Scene scene) {
+        this.scene = scene;
     }
 
     void loadFile(String path) {
@@ -68,6 +82,11 @@ public class PlayerController {
     @FXML
     void initialize() {
         playerControl.setEventRoot(karaokeView.getParent());
+        playerControl.fadedProperty().addListener((observable, oldFadedValue, newFadedValue) -> {
+            if (newFadedValue != null && scene != null) {
+                scene.setCursor(newFadedValue ? Cursor.NONE : Cursor.DEFAULT);
+            }
+        });
     }
 
 }
