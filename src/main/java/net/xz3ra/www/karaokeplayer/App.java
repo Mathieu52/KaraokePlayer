@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import net.xz3ra.www.karaokeplayer.exceptions.ExceptionAlertHandler;
+import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
 
 import java.awt.*;
 import java.awt.desktop.OpenFilesEvent;
@@ -35,6 +36,8 @@ public class App extends Application {
         stage.setTitle("Karaoke Player");
         stage.setScene(scene);
         stage.show();
+
+        //playerController.setKaraoke(Karaoke.EMPTY);
 
         if (onStartComplete != null) {
             onStartComplete.run();

@@ -133,7 +133,7 @@ public class MediaPlayerControl extends StackPane implements Initializable {
             removeKaraokePlayerListener(oldMediaPlayer);
             transferKaraokePlayerValues(oldMediaPlayer, newMediaPlayer);
 
-            if (newMediaPlayer.getStatus() != null && newMediaPlayer.getStatus() == MediaPlayer.Status.READY) {
+            if (newMediaPlayer.getStatus() != null && newMediaPlayer.getStatus() != MediaPlayer.Status.UNKNOWN) {
                 addKaraokePlayerListener(newMediaPlayer);
             }
 

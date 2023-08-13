@@ -1,26 +1,50 @@
 package net.xz3ra.www.karaokeplayer;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
+import java.util.logging.*;
+
+import javafx.beans.Observable;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.media.MediaException;
 import net.xz3ra.www.karaokeplayer.exceptions.ExceptionAlertHandler;
+import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
+import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
 import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
 import net.xz3ra.www.karaokeplayer.karaoke.KaraokePlayer;
 import net.xz3ra.www.karaokeplayer.karaoke.KaraokeView;
 import net.xz3ra.www.karaokeplayer.media.MediaPlayerControl;
+import net.xz3ra.www.karaokeplayer.ressource.RessourceManager;
+import net.xz3ra.www.karaokeplayer.util.AlertUtils;
 
 public class PlayerController {
 
+    private static final Path LOG_FILE = RessourceManager.LOG_FILE;
+    private static final Logger logger = Logger.getLogger(PlayerController.class.getName());
+
+    static {
+        logger.addHandler(new ConsoleHandler());
+        try {
+            RessourceManager.createLogFile();
+            logger.addHandler(new FileHandler(LOG_FILE.toString()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     @FXML
     private KaraokeView karaokeView;
     @FXML
     private MediaPlayerControl playerControl;
 
-    private KaraokePlayer karaokePlayer;
+    public SimpleObjectProperty<Karaoke> karaoke = new SimpleObjectProperty<>();
 
-    private Karaoke karaoke;
+    private SimpleObjectProperty<KaraokePlayer> karaokePlayer = new SimpleObjectProperty<>();
 
     private SimpleObjectProperty<Parent> root = new SimpleObjectProperty<>();
 
@@ -50,31 +74,55 @@ public class PlayerController {
         this.scene.set(scene);
     }
 
-    void loadFile(String path) {
+    public Karaoke getKaraoke() {
+        return karaoke.get();
+    }
+
+    public SimpleObjectProperty<Karaoke> karaokeProperty() {
+        return karaoke;
+    }
+
+    public void setKaraoke(Karaoke karaoke) {
+        this.karaoke.set(karaoke);
+    }
+
+    public void loadFile(String path) {
         try {
-            karaoke = Karaoke.load(path);
-        } catch (Exception e) {
+            Karaoke karaoke = Karaoke.load(path);
+            setKaraoke(karaoke);
+        } catch (UnsupportedFileTypeException e) {
             ExceptionAlertHandler.showAlert(e);
+            logger.log(Level.WARNING, "Tried to load Karaoke with unsupported file type: " + e.getStackTrace());
+        } catch (MissingFilesException e) {
+            ExceptionAlertHandler.showAlert(e);
+            logger.log(Level.WARNING, "Tried to load Karaoke but some expected files where missing: " + e.getStackTrace());
+        } catch (IOException e) {
+            ExceptionAlertHandler.showAlert(e);
+            logger.log(Level.WARNING, "Failed to load Karaoke (IOException): " + e.getStackTrace());
+        }
+    }
+    private void onKaraokeChange(Observable observable, Karaoke oldKaraoke, Karaoke newKaraoke) {
+        if (newKaraoke == null) {
+            return;
         }
 
-        KaraokePlayer oldKaraokePlayer = karaokePlayer;
-        try {
-            if (karaoke != null) {
-                karaokePlayer = new KaraokePlayer(karaoke);
-
-                karaokeView.setKaraokePlayer(karaokePlayer);
-
-                playerControl.setMediaPlayer(karaokePlayer.getMediaPlayer());
-
-                playerControl.setDisable(false);
-            }
-        } catch (Exception e) {
-            ExceptionAlertHandler.showAlert(e);
-        } finally {
-            if (oldKaraokePlayer != null) {
-                oldKaraokePlayer.dispose();
-            }
+        if (newKaraoke.isEmpty()) {
+            logger.log(Level.INFO, "An empty karaoke was received");
         }
+
+        karaokePlayer.set(newKaraoke.isEmpty() ? null : new KaraokePlayer(newKaraoke));
+        playerControl.setDisable(newKaraoke.isEmpty());
+        try {
+            karaokeView.setKaraokePlayer(karaokePlayer.get());
+            playerControl.setMediaPlayer(karaokePlayer.get() == null ? null : karaokePlayer.get().getMediaPlayer());
+        } catch (MediaException e) {
+            handleMediaException(e);
+        }
+    }
+
+    private void handleMediaException(MediaException exception) {
+        AlertUtils.showAlert(Alert.AlertType.ERROR, exception.getClass().getSimpleName(), "Unable to load media (sound or video)", exception.getMessage());
+        logger.log(Level.SEVERE, "Failed to properly load medaia (sound or video)", exception.getStackTrace());
     }
 
     @FXML
@@ -85,6 +133,22 @@ public class PlayerController {
                 sceneProperty().get().setCursor(newFadedValue ? Cursor.NONE : Cursor.DEFAULT);
             }
         });
+
+        //  Handle Media error and dispose of old player
+        karaokePlayer.addListener((observable, oldKaraokePlayer, newKaraokePlayer) -> {
+            if (newKaraokePlayer != null) {
+                newKaraokePlayer.setOnError(() -> {
+                    MediaException exception = newKaraokePlayer.getError();
+                    handleMediaException(exception);
+                });
+            }
+
+            if (oldKaraokePlayer != null) {
+                oldKaraokePlayer.dispose();
+            }
+        });
+
+        karaokeProperty().addListener(this::onKaraokeChange);
     }
 
 }

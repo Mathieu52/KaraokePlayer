@@ -6,6 +6,7 @@ import javafx.util.Duration;
 import net.xz3ra.www.karaokeplayer.TimedSection;
 import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
 import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
+import net.xz3ra.www.karaokeplayer.ressource.RessourceManager;
 import net.xz3ra.www.karaokeplayer.util.ArchiveUtil;
 import net.xz3ra.www.karaokeplayer.util.FileUtils;
 
@@ -22,8 +23,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Karaoke {
-
-    private static final Path TEMPORARY_DIRECTORY = Paths.get(System.getProperty("user.home"), "Karaoke Player/TEMP");
+    private static final Path TEMPORARY_DIRECTORY = RessourceManager.TEMPORARY_DIRECTORY;
+    public static final Karaoke EMPTY = new Karaoke();
     public static final String FILE_TYPE = "skf";
     private static final String LABEL_PATTERN = "(?<start>\\d+.\\d+)\\t(?<end>\\d+.\\d+)\\t(?<value>.*)";
     private static final String VIDEO_PATTERN = ".*\\.(mp4|avi|mov|wmv|mkv|flv|mpg)$";
@@ -39,11 +40,22 @@ public class Karaoke {
 
     private final List<TimedSection> sections;
     private final String lyrics;
+
+    private Karaoke() {
+        this("", null, new ArrayList<>());
+    }
     private Karaoke(String title, Media media, List<TimedSection> sections) {
         this.title = title;
         this.media = media;
         this.sections = sections;
         this.lyrics = sectionsToString(sections);
+    }
+
+    public boolean isEmpty() {
+        return isEmpty(this);
+    }
+    public static boolean isEmpty(Karaoke karaoke) {
+        return karaoke.media == null || karaoke.sections == null || (karaoke.title.isEmpty() && karaoke.sections.isEmpty() && karaoke.lyrics.isEmpty());
     }
 
     public static Karaoke load(String path) throws UnsupportedFileTypeException, IOException, MissingFilesException {

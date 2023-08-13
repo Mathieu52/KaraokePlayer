@@ -5,6 +5,7 @@ module org.openjfx {
     requires javafx.graphics;
     requires javafx.media;
     requires java.desktop;
+    requires java.logging;
 
     exports net.xz3ra.www.karaokeplayer;
     exports net.xz3ra.www.karaokeplayer.exceptions;

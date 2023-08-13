@@ -20,7 +20,7 @@ public class KaraokePlayer {
     private SimpleStringProperty activeParagraphProperty = new SimpleStringProperty("");
 
 
-    public KaraokePlayer(Karaoke karaoke) {
+    public KaraokePlayer(Karaoke karaoke) throws NullPointerException, MediaException {
         this.karaoke = karaoke;
         this.mediaPlayer = new MediaPlayer(karaoke.getMedia());
         initProperty();
