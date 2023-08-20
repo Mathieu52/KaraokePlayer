@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 
+import static net.xz3ra.www.karaokeplayer.util.FileUtils.clearDirectory;
+
 public class RessourceManager {
     public static final Path APPLICATION_DIRECTORY = Paths.get(System.getProperty("user.home"), ".karaokePlayer");
     public static final Path TEMPORARY_DIRECTORY = Paths.get(APPLICATION_DIRECTORY.toString(), "temp");
@@ -27,19 +29,5 @@ public class RessourceManager {
 
     public static void clearTempDirectory() {
         clearDirectory(TEMPORARY_DIRECTORY.toFile());
-    }
-
-    private static void clearDirectory(File directory) {
-        for (File file : directory.listFiles()) {
-            if (!file.exists()) {
-                continue;
-            }
-
-            if (file.isDirectory()) {
-                clearDirectory(file);
-            } else {
-                file.delete();
-            }
-        }
     }
 }

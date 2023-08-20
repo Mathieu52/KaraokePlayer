@@ -15,6 +15,21 @@
     <description>A simple karaoke player</description>
     <url>https://github.com/Mathieu52/KaraokePlayer</url>
 
+    <developers>
+        <developer>
+            <id>Xz3ra</id>
+            <name>Mathieu Durand</name>
+            <email>mathieu_durand@icloud.com</email>
+            <url>https://github.com/Mathieu52</url>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <properties>
+                <picUrl>https://github.com/Mathieu52.png</picUrl>
+            </properties>
+        </developer>
+    </developers>
+
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -41,9 +56,28 @@
             <artifactId>javafx-media</artifactId>
             <version>20.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>11.0.2</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.main.class>net.xz3ra.www.karaokeplayer.App</maven.compiler.main.class>
     </properties>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
 </project>

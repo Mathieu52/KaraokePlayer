@@ -36,11 +36,9 @@ public class App extends Application {
         playerController.setRoot(root);
         playerController.setScene(scene);
 
-        stage.setTitle("Karaoke Player");
+        stage.setTitle(AppInfo.getTitle());
         stage.setScene(scene);
         stage.show();
-
-        //playerController.setKaraoke(Karaoke.EMPTY);
 
         if (onStartComplete != null) {
             onStartComplete.run();

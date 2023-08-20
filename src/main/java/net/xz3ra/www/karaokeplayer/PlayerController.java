@@ -12,8 +12,13 @@ import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.MenuBar;
 import javafx.scene.media.MediaException;
+import javafx.scene.web.WebView;
+import javafx.stage.FileChooser;
 import net.xz3ra.www.karaokeplayer.exceptions.ExceptionAlertHandler;
+import net.xz3ra.www.karaokeplayer.exceptions.InvalidFormatException;
 import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
 import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
 import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
@@ -22,9 +27,10 @@ import net.xz3ra.www.karaokeplayer.karaoke.KaraokeView;
 import net.xz3ra.www.karaokeplayer.media.MediaPlayerControl;
 import net.xz3ra.www.karaokeplayer.ressource.RessourceManager;
 import net.xz3ra.www.karaokeplayer.util.AlertUtils;
+import net.xz3ra.www.karaokeplayer.util.FileUIUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public class PlayerController {
-
     private static final Path LOG_FILE = RessourceManager.LOG_FILE;
     private static final Logger logger = Logger.getLogger(PlayerController.class.getName());
 
@@ -37,6 +43,9 @@ public class PlayerController {
             throw new RuntimeException(e);
         }
     }
+
+    @FXML
+    MenuBar menuBar;
     @FXML
     private KaraokeView karaokeView;
     @FXML
@@ -92,13 +101,16 @@ public class PlayerController {
             setKaraoke(karaoke);
         } catch (UnsupportedFileTypeException e) {
             ExceptionAlertHandler.showAlert(e);
-            logger.log(Level.WARNING, "Tried to load Karaoke with unsupported file type: " + e.getStackTrace());
+            logger.log(Level.WARNING, "Tried to load Karaoke with unsupported file type: " + ExceptionUtils.getStackTrace(e));
         } catch (MissingFilesException e) {
             ExceptionAlertHandler.showAlert(e);
-            logger.log(Level.WARNING, "Tried to load Karaoke but some expected files where missing: " + e.getStackTrace());
+            logger.log(Level.WARNING, "Tried to load Karaoke but some expected files where missing: " + ExceptionUtils.getStackTrace(e));
         } catch (IOException e) {
             ExceptionAlertHandler.showAlert(e);
-            logger.log(Level.WARNING, "Failed to load Karaoke (IOException): " + e.getStackTrace());
+            logger.log(Level.WARNING, "Failed to load Karaoke (IOException): " + ExceptionUtils.getStackTrace(e));
+        }  catch (InvalidFormatException e) {
+            ExceptionAlertHandler.showAlert(e);
+            logger.log(Level.WARNING, "Failed to load Karaoke because of invalid format",  ExceptionUtils.getStackTrace(e));
         }
     }
     private void onKaraokeChange(Observable observable, Karaoke oldKaraoke, Karaoke newKaraoke) {
@@ -126,6 +138,38 @@ public class PlayerController {
     }
 
     @FXML
+    void createBlankKaraoke() {
+        FileUIUtils.FileCreator creator = (file) -> Karaoke.saveToFolder(file.toPath().toString(), Karaoke.EMPTY);
+        FileUIUtils.saveFile(creator, "Create new blank karaoke", null);
+    }
+
+    @FXML
+    void exportKaraoke() {
+        FileUIUtils.FileCreator creator = (file) -> {
+            try {
+                Karaoke.save(file.toPath().toString(), getKaraoke(), true);
+            } catch (UnsupportedFileTypeException e) {
+                ExceptionAlertHandler.showAlert(e);
+                logger.log(Level.WARNING, "Tried to save Karaoke to unsupported file type: " + ExceptionUtils.getStackTrace(e));
+            }
+        };
+
+        FileUIUtils.saveFile(creator, "Export karaoke", Karaoke.ALLOWED_SAVING_TYPES.toArray(FileChooser.ExtensionFilter[]::new));
+    }
+
+    @FXML
+    void openKaraokeFile() {
+        FileUIUtils.FileLoader loader = (file) -> loadFile(file.toPath().toString());
+        FileUIUtils.loadFile(loader, "Open karaoke file", Karaoke.ALLOWED_LOADING_TYPES.toArray(FileChooser.ExtensionFilter[]::new));
+    }
+
+    @FXML
+    void openKaraokeDirectory() {
+        FileUIUtils.FileLoader loader = (file) -> loadFile(file.toPath().toString());
+        FileUIUtils.loadDirectory(loader, "Select destination");
+    }
+
+    @FXML
     void initialize() {
         playerControl.eventRootProperty().bind(rootProperty());
         playerControl.fadedProperty().addListener((observable, oldFadedValue, newFadedValue) -> {
@@ -133,6 +177,8 @@ public class PlayerController {
                 sceneProperty().get().setCursor(newFadedValue ? Cursor.NONE : Cursor.DEFAULT);
             }
         });
+
+        menuBar.visibleProperty().bind(playerControl.fadedProperty().not());
 
         //  Handle Media error and dispose of old player
         karaokePlayer.addListener((observable, oldKaraokePlayer, newKaraokePlayer) -> {
