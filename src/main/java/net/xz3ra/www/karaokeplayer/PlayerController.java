@@ -12,10 +12,8 @@ import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuBar;
 import javafx.scene.media.MediaException;
-import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import net.xz3ra.www.karaokeplayer.exceptions.*;
 import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
@@ -145,7 +143,7 @@ public class PlayerController {
             }
         };
 
-        FileUIUtils.saveFile(creator, "Create new blank karaoke", null);
+        FileUIUtils.saveFile(creator, "Create new blank karaoke", (FileChooser.ExtensionFilter) null);
     }
 
     @FXML

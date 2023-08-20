@@ -47,21 +47,6 @@ public class App extends Application {
 
         stage.setHeight(300);
 
-        //scene.widthProperty().addListener(((observable, oldValue, newValue) -> System.out.println(newValue)));
-
-        //stage.minWidthProperty().bind(scene.widthProperty());
-        //stage.minHeightProperty().bind(scene.heightProperty());
-
-        //stage.setMinWidth(root.get());
-
-        //System.out.println(root.getPrefWidth());
-        //root.minWidthProperty().addListener(((observable, oldValue, newValue) -> System.out.println(newValue)));
-
-        //Platform.runLater(() -> {
-            //stage.minWidthProperty().bind(root.getP());
-            //stage.minHeightProperty().bind(root.minHeightProperty());
-       // });
-
         if (onStartComplete != null) {
             onStartComplete.run();
         }
