@@ -197,7 +197,7 @@ public class Karaoke {
         } catch (IOException e) {
             throw new IOException("Failed to create karaoke file", e);
         } finally {
-            FileUtils.deleteDirectory(tempFolderPath.toFile());
+            //FileUtils.deleteDirectory(tempFolderPath.toFile());
         }
     }
 
