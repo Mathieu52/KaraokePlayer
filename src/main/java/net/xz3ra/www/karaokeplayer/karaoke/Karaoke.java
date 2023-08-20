@@ -195,7 +195,7 @@ public class Karaoke {
         try {
             ArchiveUtil.zipFolder(tempFolderPath, filePath);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create karaoke file", e);
+            throw new IOException("Failed to create karaoke file", e);
         } finally {
             FileUtils.deleteDirectory(tempFolderPath.toFile());
         }
