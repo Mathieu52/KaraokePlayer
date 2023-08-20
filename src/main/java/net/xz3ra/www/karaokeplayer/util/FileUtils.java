@@ -27,10 +27,22 @@ public class FileUtils {
     }
 
     public static void saveStringList(File file, List<String> stringList) {
+        try {
+            if (!file.exists()) {
+                Files.createFile(file.toPath());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error creating file: " + file.getName(), e);
+        }
+
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            boolean firstLine = true;
             for (String line : stringList) {
+                if (!firstLine) {
+                    bw.newLine();
+                }
                 bw.write(line);
-                bw.newLine();
+                firstLine = false;
             }
         } catch (IOException e) {
             throw new RuntimeException("Error writing to file: " + file.getName(), e);
@@ -38,6 +50,14 @@ public class FileUtils {
     }
 
     public static void saveString(File file, String string) {
+        try {
+            if (!file.exists()) {
+                Files.createFile(file.toPath());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error creating file: " + file.getName(), e);
+        }
+
         try {
             Files.write(file.toPath(), string.getBytes());
         } catch (IOException e) {
@@ -47,5 +67,26 @@ public class FileUtils {
 
     public static String removeExtension(String fileName) {
         return fileName.replaceFirst("[.][^.]+$", "");
+    }
+
+    public static void deleteDirectory(File directory) {
+        if (directory.exists()) {
+            clearDirectory(directory);
+            directory.delete();
+        }
+    }
+
+    public static void clearDirectory(File directory) {
+        for (File file : directory.listFiles()) {
+            if (!file.exists()) {
+                continue;
+            }
+
+            if (file.isDirectory()) {
+                clearDirectory(file);
+            } else {
+                file.delete();
+            }
+        }
     }
 }

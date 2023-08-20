@@ -6,11 +6,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import net.xz3ra.www.karaokeplayer.exceptions.ExceptionAlertHandler;
+import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
+import net.xz3ra.www.karaokeplayer.ressource.RessourceManager;
 
 import java.awt.*;
 import java.awt.desktop.OpenFilesEvent;
 import java.awt.desktop.OpenFilesHandler;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * JavaFX App
@@ -32,13 +36,19 @@ public class App extends Application {
         playerController.setRoot(root);
         playerController.setScene(scene);
 
-        stage.setTitle("Karaoke Player");
+        stage.setTitle(AppInfo.getTitle());
         stage.setScene(scene);
         stage.show();
 
         if (onStartComplete != null) {
             onStartComplete.run();
         }
+    }
+
+    @Override
+    public void stop() throws Exception {
+        RessourceManager.clearTempDirectory();
+        super.stop();
     }
 
     public static void main(String[] args) {

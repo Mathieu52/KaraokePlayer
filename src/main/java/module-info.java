@@ -4,7 +4,11 @@ module org.openjfx {
     requires javafx.base;
     requires javafx.graphics;
     requires javafx.media;
+    requires javafx.web;
     requires java.desktop;
+    requires java.logging;
+    requires org.apache.commons.lang3;
+    requires org.apache.commons.text;
 
     exports net.xz3ra.www.karaokeplayer;
     exports net.xz3ra.www.karaokeplayer.exceptions;

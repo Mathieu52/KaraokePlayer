@@ -78,8 +78,6 @@ public class KaraokeView extends StackPane {
             }));
 
             mediaView.setMediaPlayer(player.getMediaPlayer());
-        } else {
-            throw new NullPointerException("A null player was passed to KaraokeView");
         }
     }
 
