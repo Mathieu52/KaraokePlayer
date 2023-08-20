@@ -49,7 +49,7 @@
 <?import net.xz3ra.www.karaokeplayer.karaoke.KaraokeView?>
 <?import net.xz3ra.www.karaokeplayer.media.MediaPlayerControl?>
 <?import javafx.scene.input.KeyCodeCombination?>
-<VBox prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.xz3ra.www.karaokeplayer.PlayerController">
+<VBox xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.xz3ra.www.karaokeplayer.PlayerController">
   <children>
     <MenuBar fx:id="menuBar" VBox.vgrow="NEVER" useSystemMenuBar="false">
       <menus>

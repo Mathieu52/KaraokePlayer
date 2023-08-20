@@ -1,9 +1,11 @@
 package net.xz3ra.www.karaokeplayer;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import net.xz3ra.www.karaokeplayer.exceptions.ExceptionAlertHandler;
 import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
@@ -28,9 +30,9 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("fxml/main.fxml"));
-        Parent root = fxmlLoader.load();
+        Pane root = fxmlLoader.load();
 
-        Scene scene = new Scene(root, 320, 240);
+        Scene scene = new Scene(root);
 
         playerController = fxmlLoader.getController();
         playerController.setRoot(root);
@@ -39,6 +41,26 @@ public class App extends Application {
         stage.setTitle(AppInfo.getTitle());
         stage.setScene(scene);
         stage.show();
+
+        stage.setMinWidth(scene.getWidth());
+        stage.setMinHeight(scene.getHeight());
+
+        stage.setHeight(300);
+
+        //scene.widthProperty().addListener(((observable, oldValue, newValue) -> System.out.println(newValue)));
+
+        //stage.minWidthProperty().bind(scene.widthProperty());
+        //stage.minHeightProperty().bind(scene.heightProperty());
+
+        //stage.setMinWidth(root.get());
+
+        //System.out.println(root.getPrefWidth());
+        //root.minWidthProperty().addListener(((observable, oldValue, newValue) -> System.out.println(newValue)));
+
+        //Platform.runLater(() -> {
+            //stage.minWidthProperty().bind(root.getP());
+            //stage.minHeightProperty().bind(root.minHeightProperty());
+       // });
 
         if (onStartComplete != null) {
             onStartComplete.run();
