@@ -4,7 +4,6 @@ module org.openjfx {
     requires javafx.base;
     requires javafx.graphics;
     requires javafx.media;
-    requires javafx.web;
     requires java.desktop;
     requires java.logging;
     requires org.apache.commons.lang3;

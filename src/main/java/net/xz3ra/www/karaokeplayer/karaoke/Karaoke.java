@@ -49,7 +49,7 @@ public class Karaoke {
     private static final String VIDEO_PATTERN = ".*\\.(mp4|avi|mov|wmv|mkv|flv|mpg)$";
     private static final String AUDIO_PATTERN = ".*\\.(mp3|wav|ogg|flac|m4a)$";
     private static final String FILE_PATTERN = ".*\\." + FILE_TYPE + "$";
-    private static final String DIRECTORY_PATTERN = ".*$";
+    private static final String DIRECTORY_PATTERN = "/?^(.+/)*([^.]+)$";
 
     private static final String LABEL_FILE = "label.txt";
     private static final String MEDIA_FILE = "media";
@@ -197,7 +197,7 @@ public class Karaoke {
         } catch (IOException e) {
             throw new IOException("Failed to create karaoke file", e);
         } finally {
-            //FileUtils.deleteDirectory(tempFolderPath.toFile());
+            FileUtils.deleteDirectory(tempFolderPath.toFile());
         }
     }
 
@@ -211,7 +211,7 @@ public class Karaoke {
         try {
             Files.createDirectories(folderPath);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create karaoke folder", e);
+            throw new IOException("Failed to create karaoke folder", e);
         }
 
         Path labelPath = Path.of(folderPath.toString(), LABEL_FILE);
@@ -357,7 +357,7 @@ public class Karaoke {
     }
     private static void saveMediaToFile(Path path, Media media) throws IOException {
         if (media != null) {
-            Path source = Path.of(URI.create(media.getSource()).getPath());
+            Path source = Paths.get(URI.create(media.getSource()));
 
             try {
                 Files.deleteIfExists(path);
