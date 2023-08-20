@@ -49,7 +49,7 @@
                </HBox.margin></Button>
             <Button fx:id="playButton" mnemonicParsing="false" onAction="#playButtonAction">
                <graphic>
-                  <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                  <ImageView fx:id="playButtonImage" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@/net/xz3ra/www/karaokeplayer/media/play_button.png" />
                      </image>

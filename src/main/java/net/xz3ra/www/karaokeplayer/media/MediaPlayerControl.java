@@ -19,7 +19,6 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import javafx.scene.control.TreeCell;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -74,14 +73,17 @@ public class MediaPlayerControl extends StackPane implements Initializable {
 
     @FXML
     private ImageView volumeLevelImage;
-
     @FXML
     private Slider volumeSlider;
+
+    @FXML
+    private ImageView playButtonImage;
 
     //  Listeners
     private ChangeListener<Duration> playerCurrentTimeListener;
     private ChangeListener<Duration> playerCycleDurationListener;
     private ChangeListener<MediaPlayer.Status> playerStatusListener;
+    private ChangeListener<Boolean> playerPlayingListener;
     private EventHandler<KeyEvent> keyPressedHandler;
     private EventHandler<KeyEvent> keyReleasedHandler;
 
@@ -102,7 +104,7 @@ public class MediaPlayerControl extends StackPane implements Initializable {
         initEventRootProperty();
         initFadedProperty();
 
-        initKaraokePlayerListener();
+        initMediaPlayerListener();
         initTimeSliderListener();
         initKeyHandlers();
         initUserActionHandlers();
@@ -130,11 +132,11 @@ public class MediaPlayerControl extends StackPane implements Initializable {
 
     private void initMediaPlayerProperty() {
         mediaPlayer.addListener((observable, oldMediaPlayer, newMediaPlayer) -> {
-            removeKaraokePlayerListener(oldMediaPlayer);
-            transferKaraokePlayerValues(oldMediaPlayer, newMediaPlayer);
+            removeMediaPlayerListener(oldMediaPlayer);
+            transferPlayerValues(oldMediaPlayer, newMediaPlayer);
 
             if (newMediaPlayer.getStatus() != null && newMediaPlayer.getStatus() != MediaPlayer.Status.UNKNOWN) {
-                addKaraokePlayerListener(newMediaPlayer);
+                addMediaPlayerListener(newMediaPlayer);
             }
 
             if (oldMediaPlayer != null) {
@@ -144,12 +146,17 @@ public class MediaPlayerControl extends StackPane implements Initializable {
             playerStatusListener = (observableStatus, oldStatus, newStatus) -> {
                 if (newStatus == MediaPlayer.Status.READY) {
                     Platform.runLater(() -> {
-                        addKaraokePlayerListener(newMediaPlayer);
+                        addMediaPlayerListener(newMediaPlayer);
                         updateTime(newMediaPlayer.getCurrentTime());
                         updateDuration(newMediaPlayer.getTotalDuration());
                     });
                 }
+
+                //  Update play/pause button icon
+                String imageName = newStatus == MediaPlayer.Status.PLAYING ? "pause_button" : "play_button";
+                playButtonImage.setImage(new Image(String.format("/net/xz3ra/www/karaokeplayer/media/%s.png", imageName)));
             };
+
             newMediaPlayer.statusProperty().addListener(playerStatusListener);
         });
     }
@@ -205,7 +212,7 @@ public class MediaPlayerControl extends StackPane implements Initializable {
 
     //  ********************* PROTECTED *********************
 
-    protected void initKaraokePlayerListener() {
+    protected void initMediaPlayerListener() {
         playerCurrentTimeListener = (observable, oldValue, newValue) -> {
             if (newValue != null) {
                 updateTime(newValue);
@@ -219,25 +226,25 @@ public class MediaPlayerControl extends StackPane implements Initializable {
         };
     }
 
-    protected void addKaraokePlayerListener(MediaPlayer karaokePlayer) {
-        if (karaokePlayer != null) {
-            karaokePlayer.volumeProperty().bindBidirectional(volumeSlider.valueProperty());
-            karaokePlayer.currentTimeProperty().addListener(playerCurrentTimeListener);
-            karaokePlayer.cycleDurationProperty().addListener(playerCycleDurationListener);
+    protected void addMediaPlayerListener(MediaPlayer mediaPlayer) {
+        if (mediaPlayer != null) {
+            mediaPlayer.volumeProperty().bindBidirectional(volumeSlider.valueProperty());
+            mediaPlayer.currentTimeProperty().addListener(playerCurrentTimeListener);
+            mediaPlayer.cycleDurationProperty().addListener(playerCycleDurationListener);
         }
     }
 
-    protected void transferKaraokePlayerValues(MediaPlayer oldKaraokePlayer, MediaPlayer newKaraokePlayer) {
-        if (oldKaraokePlayer != null && newKaraokePlayer != null) {
-            newKaraokePlayer.setVolume(oldKaraokePlayer.getVolume());
+    protected void transferPlayerValues(MediaPlayer oldMediaPlayer, MediaPlayer newMediaPlayer) {
+        if (oldMediaPlayer != null && newMediaPlayer != null) {
+            newMediaPlayer.setVolume(oldMediaPlayer.getVolume());
         }
     }
 
-    protected void removeKaraokePlayerListener(MediaPlayer karaokePlayer) {
-        if (karaokePlayer != null) {
-            karaokePlayer.volumeProperty().unbindBidirectional(volumeSlider.valueProperty());
-            karaokePlayer.currentTimeProperty().removeListener(playerCurrentTimeListener);
-            karaokePlayer.cycleDurationProperty().removeListener(playerCycleDurationListener);
+    protected void removeMediaPlayerListener(MediaPlayer mediaPlayer) {
+        if (mediaPlayer != null) {
+            mediaPlayer.volumeProperty().unbindBidirectional(volumeSlider.valueProperty());
+            mediaPlayer.currentTimeProperty().removeListener(playerCurrentTimeListener);
+            mediaPlayer.cycleDurationProperty().removeListener(playerCycleDurationListener);
         }
     }
 
