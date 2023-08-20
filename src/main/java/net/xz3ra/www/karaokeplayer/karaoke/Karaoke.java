@@ -7,6 +7,7 @@ import javafx.util.Duration;
 import net.xz3ra.www.karaokeplayer.TimedSection;
 import net.xz3ra.www.karaokeplayer.exceptions.InvalidFormatException;
 import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
+import net.xz3ra.www.karaokeplayer.exceptions.SaveFailedException;
 import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
 import net.xz3ra.www.karaokeplayer.ressource.RessourceManager;
 import net.xz3ra.www.karaokeplayer.util.ArchiveUtil;
@@ -134,7 +135,7 @@ public class Karaoke {
      * @param path Path indicating wheer to save the Karaoke
      * @throws UnsupportedFileTypeException
      */
-    public void save(String path) throws UnsupportedFileTypeException {
+    public void save(String path) throws UnsupportedFileTypeException, IOException {
         save(path, this, false);
     }
 
@@ -154,7 +155,7 @@ public class Karaoke {
      * @param karaoke The Karaoke to save
      * @throws UnsupportedFileTypeException
      */
-    public static void save(String path, Karaoke karaoke) throws UnsupportedFileTypeException {
+    public static void save(String path, Karaoke karaoke) throws UnsupportedFileTypeException, IOException {
         save(path, karaoke, false);
     }
 
@@ -165,7 +166,7 @@ public class Karaoke {
      * @param assumeNoExtensionIsDirectory Whether to assume no extension means directory
      * @throws UnsupportedFileTypeException
      */
-    public static void save(String path, Karaoke karaoke, boolean assumeNoExtensionIsDirectory) throws UnsupportedFileTypeException {
+    public static void save(String path, Karaoke karaoke, boolean assumeNoExtensionIsDirectory) throws UnsupportedFileTypeException, IOException {
         Path file = Paths.get(path);
 
         if (assumeNoExtensionIsDirectory && isDirectory(file)) {
@@ -181,11 +182,11 @@ public class Karaoke {
         throw new UnsupportedFileTypeException("File " + file + " is not supported for saving");
     }
 
-    public void saveToKaraokeFile(String path) {
+    public void saveToKaraokeFile(String path) throws IOException {
         saveToKaraokeFile(path, this);
     }
 
-    public static void saveToKaraokeFile(String path, Karaoke karaoke) {
+    public static void saveToKaraokeFile(String path, Karaoke karaoke) throws IOException {
         Path filePath = Paths.get(path);
         String title = filePath.getFileName().toString().replaceFirst("\\." + FILE_TYPE + "$", "");
         Path tempFolderPath = Path.of(TEMPORARY_DIRECTORY.toString(), title);
@@ -200,11 +201,11 @@ public class Karaoke {
         }
     }
 
-    public void saveToFolder(String path) {
+    public void saveToFolder(String path) throws IOException {
         saveToFolder(path, this);
     }
 
-    public static void saveToFolder(String path, Karaoke karaoke) {
+    public static void saveToFolder(String path, Karaoke karaoke) throws IOException {
         Path folderPath = Paths.get(path);
 
         try {
@@ -218,7 +219,6 @@ public class Karaoke {
 
         saveSectionsToFile(labelPath, karaoke.getSections());
         saveMediaToFile(mediaPath, karaoke.getMedia());
-
     }
 
     public static boolean isDirectory(Path path) {
@@ -352,10 +352,10 @@ public class Karaoke {
         FileUtils.saveStringList(path.toFile(), lines);
     }
 
-    private void saveMediaToFile(Path path) {
+    private void saveMediaToFile(Path path) throws IOException {
         saveMediaToFile(path, this.getMedia());
     }
-    private static void saveMediaToFile(Path path, Media media) {
+    private static void saveMediaToFile(Path path, Media media) throws IOException {
         if (media != null) {
             Path source = Path.of(URI.create(media.getSource()).getPath());
 
@@ -363,13 +363,13 @@ public class Karaoke {
                 Files.deleteIfExists(path);
                 Files.copy(source, path);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to copy media file to new location", e);
+                throw new IOException("Failed to copy media file to new location", e);
             }
         } else {
             try {
                 Files.createFile(path);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to create media file", e);
+                throw new IOException("Failed to create media file", e);
             }
         }
     }

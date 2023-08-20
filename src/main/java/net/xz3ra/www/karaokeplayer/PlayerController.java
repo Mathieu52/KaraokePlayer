@@ -17,10 +17,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.media.MediaException;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
-import net.xz3ra.www.karaokeplayer.exceptions.ExceptionAlertHandler;
-import net.xz3ra.www.karaokeplayer.exceptions.InvalidFormatException;
-import net.xz3ra.www.karaokeplayer.exceptions.MissingFilesException;
-import net.xz3ra.www.karaokeplayer.exceptions.UnsupportedFileTypeException;
+import net.xz3ra.www.karaokeplayer.exceptions.*;
 import net.xz3ra.www.karaokeplayer.karaoke.Karaoke;
 import net.xz3ra.www.karaokeplayer.karaoke.KaraokePlayer;
 import net.xz3ra.www.karaokeplayer.karaoke.KaraokeView;
@@ -139,7 +136,15 @@ public class PlayerController {
 
     @FXML
     void createBlankKaraoke() {
-        FileUIUtils.FileCreator creator = (file) -> Karaoke.saveToFolder(file.toPath().toString(), Karaoke.EMPTY);
+        FileUIUtils.FileCreator creator = (file) -> {
+            try {
+                Karaoke.saveToFolder(file.toPath().toString(), Karaoke.EMPTY);
+            } catch (IOException e) {
+                ExceptionAlertHandler.showAlert(new SaveFailedException(e.getMessage()));
+                logger.log(Level.WARNING, "Failed to create karaoke", ExceptionUtils.getStackTrace(e));
+            }
+        };
+
         FileUIUtils.saveFile(creator, "Create new blank karaoke", null);
     }
 
@@ -151,6 +156,9 @@ public class PlayerController {
             } catch (UnsupportedFileTypeException e) {
                 ExceptionAlertHandler.showAlert(e);
                 logger.log(Level.WARNING, "Tried to save Karaoke to unsupported file type: " + ExceptionUtils.getStackTrace(e));
+            } catch (IOException e) {
+                ExceptionAlertHandler.showAlert(new SaveFailedException(e.getMessage()));
+                logger.log(Level.WARNING, "Failed to export karaoke", ExceptionUtils.getStackTrace(e));
             }
         };
 
