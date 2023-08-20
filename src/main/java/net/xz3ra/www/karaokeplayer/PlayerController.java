@@ -134,7 +134,7 @@ public class PlayerController {
 
     private void handleMediaException(MediaException exception) {
         AlertUtils.showAlert(Alert.AlertType.ERROR, exception.getClass().getSimpleName(), "Unable to load media (sound or video)", exception.getMessage());
-        logger.log(Level.SEVERE, "Failed to properly load medaia (sound or video)", exception.getStackTrace());
+        logger.log(Level.SEVERE, "Failed to properly load media (sound or video)", exception.getStackTrace());
     }
 
     @FXML
