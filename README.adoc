@@ -18,4 +18,4 @@ image::images/Karaoke-App-Preview.png[Karaoke playing]
 image::images/Karaoke-App-Preview-2.png[Karaoke playing]
 
 == Example
-video::images/My_Flower_-_Karaoke_-_KawaiiSky.mp4[Examoke]
+video::images/My_Flower_-_Karaoke_-_KawaiiSky.mov[Examoke]
