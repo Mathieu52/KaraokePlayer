@@ -9,3 +9,13 @@ A small karaoke player with many features!
 - Easy control
 
 - Custom Karaoke files (.skf / Sing Alongs Karaoke File) are easily creatable using Audacity
+
+== Preview
+=== No Karaoke playing
+image::images/Karaoke-App-No-Karaoke.png[Karaoke not playing]
+=== Karaoke playing
+image::images/Karaoke-App-Preview.png[Karaoke playing]
+image::images/Karaoke-App-Preview-2.png[Karaoke playing]
+
+== Example
+video::images/My_Flower_-_Karaoke_-_KawaiiSky.mov[Examoke]
